@@ -27,3 +27,19 @@ impl std::fmt::Display for Color {
         write!(f, "{} {} {}", self.r(), self.g(), self.b())
     }
 }
+
+impl std::ops::Mul<&Color> for f64 {
+    type Output = Color;
+
+    fn mul(self, rhs: &Color) -> Self::Output {
+        Color(self * rhs.0)
+    }
+}
+
+impl std::ops::Mul<Color> for f64 {
+    type Output = Color;
+
+    fn mul(self, rhs: Color) -> Self::Output {
+        Color(self * rhs.0)
+    }
+}
