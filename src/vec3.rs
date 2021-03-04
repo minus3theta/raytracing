@@ -1,6 +1,8 @@
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 
-#[derive(Debug, PartialOrd, PartialEq, Copy, Clone, Add, AddAssign, Neg, Sub, SubAssign)]
+#[derive(
+    Debug, Default, PartialOrd, PartialEq, Copy, Clone, Add, AddAssign, Neg, Sub, SubAssign,
+)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -29,12 +31,6 @@ impl Vec3 {
     }
     pub fn unit_vector(&self) -> Self {
         *self / self.length()
-    }
-}
-
-impl Default for Vec3 {
-    fn default() -> Self {
-        Self::new(0.0, 0.0, 0.0)
     }
 }
 
