@@ -1,26 +1,15 @@
+use std::rc::Rc;
+
+use raytracing::hittable::{Hittable, HittableList, Sphere};
 use raytracing::{Color, Point3, Ray, Vec3};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 400;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc = &r.orig - center;
-    let a = r.dir.dot(&r.dir);
-    let half_b = oc.dot(&r.dir);
-    let c = oc.dot(&oc) - radius.powi(2);
-    let discriminant = half_b * half_b - a * c;
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
-}
-
-fn ray_color(r: &Ray) -> Color {
-    if let Some(t) = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r) {
-        let n = r.at(t) - Vec3::new(0.0, 0.0, -1.0);
-        return 0.5 * Color::new(n.x + 1., n.y + 1., n.z + 1.);
+fn ray_color<T: Hittable>(r: &Ray, world: &T) -> Color {
+    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
+        return Color(0.5 * (rec.normal + Vec3::new(1., 1., 1.)));
     }
 
     let unit_direction = r.dir.unit_vector();
@@ -32,6 +21,10 @@ fn main() {
     let viewport_height = 2.0;
     let viewport_width = ASPECT_RATIO * viewport_height;
     let focal_length = 1.0;
+
+    let mut world = HittableList::default();
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     let origin = Point3::default();
     let horiozntal = Vec3::new(viewport_width, 0.0, 0.0);
@@ -49,7 +42,7 @@ fn main() {
                 origin.clone(),
                 &lower_left_corner + u * &horiozntal + v * &vertical - &origin,
             );
-            let color_pixel = ray_color(&r);
+            let color_pixel = ray_color(&r, &world);
 
             println!("{}", color_pixel);
         }

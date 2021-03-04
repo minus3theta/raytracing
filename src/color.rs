@@ -3,7 +3,7 @@ use std::ops;
 use super::vec3::Vec3;
 
 #[derive(Debug, PartialOrd, PartialEq, Clone)]
-pub struct Color(Vec3);
+pub struct Color(pub Vec3);
 
 const RGB_SCALE: f64 = 255.999;
 
