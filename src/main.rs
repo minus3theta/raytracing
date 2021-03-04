@@ -7,13 +7,13 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
     let oc = &r.orig - center;
     let a = r.dir.dot(&r.dir);
-    let b = 2.0 * oc.dot(&r.dir);
+    let half_b = oc.dot(&r.dir);
     let c = oc.dot(&oc) - radius.powi(2);
-    let discriminant = b * b - 4.0 * a * c;
+    let discriminant = half_b * half_b - a * c;
     if discriminant < 0.0 {
         None
     } else {
-        Some((-b - discriminant.sqrt()) / (2.0 * a))
+        Some((-half_b - discriminant.sqrt()) / a)
     }
 }
 
