@@ -1,8 +1,8 @@
-use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
+use std::ops;
 
 use super::vec3::Vec3;
 
-#[derive(Debug, PartialOrd, PartialEq, Copy, Clone, Add, AddAssign, Neg, Sub, SubAssign)]
+#[derive(Debug, PartialOrd, PartialEq, Clone)]
 pub struct Color(Vec3);
 
 const RGB_SCALE: f64 = 255.999;
@@ -28,18 +28,6 @@ impl std::fmt::Display for Color {
     }
 }
 
-impl std::ops::Mul<&Color> for f64 {
-    type Output = Color;
+impl_op_ex!(+|c: &Color, d: &Color| -> Color { Color(&c.0 + &d.0) });
 
-    fn mul(self, rhs: &Color) -> Self::Output {
-        Color(self * rhs.0)
-    }
-}
-
-impl std::ops::Mul<Color> for f64 {
-    type Output = Color;
-
-    fn mul(self, rhs: Color) -> Self::Output {
-        Color(self * rhs.0)
-    }
-}
+impl_op_ex_commutative!(*|c: &Color, t: f64| -> Color { Color(&c.0 * t) });

@@ -1,8 +1,6 @@
-use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
+use std::ops;
 
-#[derive(
-    Debug, Default, PartialOrd, PartialEq, Copy, Clone, Add, AddAssign, Neg, Sub, SubAssign,
-)]
+#[derive(Debug, Default, PartialOrd, PartialEq, Clone)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -30,62 +28,45 @@ impl Vec3 {
         }
     }
     pub fn unit_vector(&self) -> Self {
-        *self / self.length()
+        self / self.length()
     }
 }
 
-impl std::ops::Mul<&Vec3> for Vec3 {
-    type Output = Self;
+impl_op_ex!(-|v: &Vec3| -> Vec3 { Vec3::new(-v.x, -v.y, -v.z) });
 
-    fn mul(self, rhs: &Vec3) -> Self::Output {
-        Self::Output {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-            z: self.z * rhs.z,
-        }
-    }
-}
+impl_op_ex!(+|a: &Vec3, b: &Vec3| -> Vec3 { Vec3::new(a.x + b.x, a.y + b.y, a.z + b.z) });
+impl_op_ex!(+=|a: &mut Vec3, b: &Vec3| {
+    a.x += b.x;
+    a.y += b.y;
+    a.z += b.z;
+});
 
-impl std::ops::Mul<f64> for Vec3 {
-    type Output = Self;
+impl_op_ex!(-|a: &Vec3, b: &Vec3| -> Vec3 { Vec3::new(a.x - b.x, a.y - b.y, a.z - b.z) });
+impl_op_ex!(-=|a: &mut Vec3, b: &Vec3| {
+    a.x -= b.x;
+    a.y -= b.y;
+    a.z -= b.z;
+});
 
-    fn mul(self, t: f64) -> Self::Output {
-        Self {
-            x: self.x * t,
-            y: self.y * t,
-            z: self.z * t,
-        }
-    }
-}
+impl_op_ex!(*|a: &Vec3, b: &Vec3| -> Vec3 { Vec3::new(a.x * b.x, a.y * b.y, a.z * b.z) });
+impl_op_ex!(*=|a: &mut Vec3, b: &Vec3| {
+    a.x *= b.x;
+    a.y *= b.y;
+    a.z *= b.z;
+});
 
-impl std::ops::MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, t: f64) {
-        self.x *= t;
-        self.y *= t;
-        self.z *= t;
-    }
-}
+impl_op_ex_commutative!(*|v: &Vec3, t: f64| -> Vec3 { Vec3::new(v.x * t, v.y * t, v.z * t) });
+impl_op_ex!(*=|v: &mut Vec3, t: f64| {
+    v.x *= t;
+    v.y *= t;
+    v.z *= t;
+});
 
-impl std::ops::Div<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, t: f64) -> Self::Output {
-        self * (1.0 / t)
-    }
-}
-
-impl std::ops::DivAssign<f64> for Vec3 {
-    fn div_assign(&mut self, t: f64) {
-        *self *= 1.0 / t;
-    }
-}
-
-impl std::ops::Mul<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, v: Vec3) -> Self::Output {
-        v * self
-    }
-}
+impl_op_ex!(/|v: &Vec3, t: f64| -> Vec3 { v * (1.0/t) });
+impl_op_ex!(/=|v: &mut Vec3, t: f64| {
+    v.x /= t;
+    v.y /= t;
+    v.z /= t;
+});
 
 pub type Point3 = Vec3;

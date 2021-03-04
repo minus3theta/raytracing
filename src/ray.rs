@@ -11,6 +11,6 @@ impl Ray {
         Self { orig, dir }
     }
     pub fn at(&self, t: f64) -> Point3 {
-        self.orig + t * self.dir
+        &self.orig + &(t * &self.dir)
     }
 }
