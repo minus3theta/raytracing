@@ -3,7 +3,8 @@ use std::rc::Rc;
 use indicatif::ProgressIterator;
 
 use raytracing::hittable::{Hittable, HittableList, Sphere};
-use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
+use raytracing::material::Lambertian;
+use raytracing::{Camera, Color, Point3, Random, Ray};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 400;
@@ -11,25 +12,16 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: i32 = 50;
 
-fn ray_color(
-    r: &Ray,
-    world: &impl Hittable,
-    depth: i32,
-    rng: &mut Random<impl rand::Rng>,
-) -> Color {
+fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Color {
     if depth <= 0 {
         return Color::default();
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let target = &rec.p + &rec.normal + Vec3::random_unit_vector(rng);
-        return 0.5
-            * ray_color(
-                &Ray::new(rec.p.clone(), &target - &rec.p),
-                world,
-                depth - 1,
-                rng,
-            );
+        if let Some((attenuation, scattered)) = rec.mat_ptr.as_ref().scatter(r, &rec, rng) {
+            return attenuation * ray_color(&scattered, world, depth - 1, rng);
+        }
+        return Color::default();
     }
 
     let unit_direction = r.dir.unit_vector();
@@ -40,9 +32,18 @@ fn ray_color(
 fn main() {
     let mut rng = Random::default();
 
+    let lambertian = Rc::new(Lambertian::new(Color::new(0.8, 0.5, 0.5)));
     let mut world = HittableList::default();
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        lambertian.clone(),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        lambertian,
+    )));
 
     let cam = Camera::default();
 

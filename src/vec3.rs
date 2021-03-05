@@ -32,14 +32,18 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Self {
         self / self.length()
     }
-    pub fn random(rng: &mut Random<impl rand::Rng>, min: f64, max: f64) -> Self {
+    pub fn near_zero(&self) -> bool {
+        let eps = 1e-8;
+        self.x.abs() < eps && self.y.abs() < eps && self.z.abs() < eps
+    }
+    pub fn random(rng: &mut Random, min: f64, max: f64) -> Self {
         Self::new(
             rng.range_f64(min, max),
             rng.range_f64(min, max),
             rng.range_f64(min, max),
         )
     }
-    pub fn random_in_unit_sphere(rng: &mut Random<impl rand::Rng>) -> Self {
+    pub fn random_in_unit_sphere(rng: &mut Random) -> Self {
         loop {
             let p = Self::random(rng, -1.0, 1.0);
             if p.length_squared() < 1. {
@@ -47,7 +51,7 @@ impl Vec3 {
             }
         }
     }
-    pub fn random_unit_vector(rng: &mut Random<impl rand::Rng>) -> Self {
+    pub fn random_unit_vector(rng: &mut Random) -> Self {
         Self::random_in_unit_sphere(rng).unit_vector()
     }
 }

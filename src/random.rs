@@ -1,11 +1,11 @@
 use rand::distributions::{Standard, Uniform};
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
-pub struct Random<R> {
-    rng: R,
+pub struct Random {
+    rng: ThreadRng,
 }
 
-impl<R: Rng> Random<R> {
+impl Random {
     pub fn unit_f64(&mut self) -> f64 {
         self.rng.sample(Standard)
     }
@@ -15,7 +15,7 @@ impl<R: Rng> Random<R> {
     }
 }
 
-impl Default for Random<ThreadRng> {
+impl Default for Random {
     fn default() -> Self {
         Self { rng: thread_rng() }
     }

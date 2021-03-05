@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use super::Hittable;
+use super::{HitRecord, Hittable};
 
 #[derive(Clone, Default)]
 pub struct HittableList {
@@ -17,7 +17,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<crate::HitRecord> {
+    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut rec = None;
         let mut closest_so_far = t_max;
         for object in &self.objects {

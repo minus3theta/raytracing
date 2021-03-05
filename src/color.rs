@@ -43,6 +43,7 @@ impl std::fmt::Display for Color {
 impl_op_ex!(+|c: &Color, d: &Color| -> Color { Color(&c.0 + &d.0) });
 impl_op_ex!(+=|c: &mut Color, d: &Color| { c.0 += &d.0 });
 
+impl_op_ex!(*|c: &Color, d: &Color| -> Color { Color(&c.0 * &d.0) });
 impl_op_ex_commutative!(*|c: &Color, t: f64| -> Color { Color(&c.0 * t) });
 
 impl_op_ex!(/|c: &Color, t: f64| -> Color { c * (1.0 / t) });

@@ -1,16 +1,21 @@
 use crate::Point3;
 
-use super::{HitRecord, Hittable};
+use super::{HitRecord, Hittable, MaterialPtr};
 
-#[derive(Debug, PartialOrd, PartialEq, Clone)]
+#[derive(Clone)]
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub mat_ptr: MaterialPtr,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point3, radius: f64, mat_ptr: MaterialPtr) -> Self {
+        Self {
+            center,
+            radius,
+            mat_ptr,
+        }
     }
 }
 
@@ -38,6 +43,12 @@ impl Hittable for Sphere {
         let t = root;
         let p = r.at(t);
         let outward_normal = (&p - &self.center) / self.radius;
-        Some(HitRecord::new(p, t, r, outward_normal))
+        Some(HitRecord::new(
+            p,
+            t,
+            r,
+            outward_normal,
+            self.mat_ptr.clone(),
+        ))
     }
 }
