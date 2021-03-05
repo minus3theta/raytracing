@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::Random;
+
 #[derive(Debug, Default, PartialOrd, PartialEq, Clone)]
 pub struct Vec3 {
     pub x: f64,
@@ -29,6 +31,21 @@ impl Vec3 {
     }
     pub fn unit_vector(&self) -> Self {
         self / self.length()
+    }
+    pub fn random(rng: &mut Random<impl rand::Rng>, min: f64, max: f64) -> Self {
+        Self::new(
+            rng.range_f64(min, max),
+            rng.range_f64(min, max),
+            rng.range_f64(min, max),
+        )
+    }
+    pub fn random_in_unit_sphere(rng: &mut Random<impl rand::Rng>) -> Self {
+        loop {
+            let p = Self::random(rng, -1.0, 1.0);
+            if p.length_squared() < 1. {
+                return p;
+            }
+        }
     }
 }
 
