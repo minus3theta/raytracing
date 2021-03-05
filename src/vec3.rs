@@ -47,6 +47,9 @@ impl Vec3 {
             }
         }
     }
+    pub fn random_unit_vector(rng: &mut Random<impl rand::Rng>) -> Self {
+        Self::random_in_unit_sphere(rng).unit_vector()
+    }
 }
 
 impl_op_ex!(-|v: &Vec3| -> Vec3 { Vec3::new(-v.x, -v.y, -v.z) });

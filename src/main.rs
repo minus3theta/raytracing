@@ -21,8 +21,8 @@ fn ray_color(
         return Color::default();
     }
 
-    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
-        let target = &rec.p + &rec.normal + Vec3::random_in_unit_sphere(rng);
+    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+        let target = &rec.p + &rec.normal + Vec3::random_unit_vector(rng);
         return 0.5
             * ray_color(
                 &Ray::new(rec.p.clone(), &target - &rec.p),

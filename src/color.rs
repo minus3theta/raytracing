@@ -12,13 +12,13 @@ impl Color {
         Self(Vec3::new(r, g, b))
     }
     pub fn r(&self) -> u8 {
-        (RGB_SCALE * Self::clamp_color(self.0.x)) as u8
+        (RGB_SCALE * Self::clamp_color(self.0.x.sqrt())) as u8
     }
     pub fn g(&self) -> u8 {
-        (RGB_SCALE * Self::clamp_color(self.0.y)) as u8
+        (RGB_SCALE * Self::clamp_color(self.0.y.sqrt())) as u8
     }
     pub fn b(&self) -> u8 {
-        (RGB_SCALE * Self::clamp_color(self.0.z)) as u8
+        (RGB_SCALE * Self::clamp_color(self.0.z.sqrt())) as u8
     }
     fn clamp(x: f64, min: f64, max: f64) -> f64 {
         if x < min {
