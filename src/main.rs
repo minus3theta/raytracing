@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
-use rand::distributions::Uniform;
+use indicatif::ProgressIterator;
+use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
 
 use raytracing::hittable::{Hittable, HittableList, Sphere};
@@ -23,7 +24,6 @@ fn ray_color<T: Hittable>(r: &Ray, world: &T) -> Color {
 
 fn main() {
     let mut rng = thread_rng();
-    let distr = Uniform::new(0.0, 1.0);
 
     let mut world = HittableList::default();
     world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
@@ -33,12 +33,12 @@ fn main() {
 
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    for j in (0..IMAGE_HEIGHT).rev() {
+    for j in (0..IMAGE_HEIGHT).rev().progress() {
         for i in 0..IMAGE_WIDTH {
             let mut color_pixel = Color::default();
             for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + rng.sample(&distr)) / (IMAGE_WIDTH - 1) as f64;
-                let v = (j as f64 + rng.sample(&distr)) / (IMAGE_HEIGHT - 1) as f64;
+                let u = (i as f64 + rng.sample::<f64, _>(Standard)) / (IMAGE_WIDTH - 1) as f64;
+                let v = (j as f64 + rng.sample::<f64, _>(Standard)) / (IMAGE_HEIGHT - 1) as f64;
                 let r = cam.get_ray(u, v);
                 color_pixel += ray_color(&r, &world);
             }

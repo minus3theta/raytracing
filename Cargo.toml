@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 impl_ops = "0.1.1"
 rand = "0.8.3"
+indicatif = "0.15.0"
