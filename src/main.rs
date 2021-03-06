@@ -3,7 +3,7 @@ use std::rc::Rc;
 use indicatif::ProgressIterator;
 
 use raytracing::hittable::{Hittable, HittableList, Sphere};
-use raytracing::material::Lambertian;
+use raytracing::material::{Lambertian, Metal};
 use raytracing::{Camera, Color, Point3, Random, Ray};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
@@ -32,17 +32,31 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
 fn main() {
     let mut rng = Random::default();
 
-    let lambertian = Rc::new(Lambertian::new(Color::new(0.8, 0.5, 0.5)));
+    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+
     let mut world = HittableList::default();
-    world.add(Rc::new(Sphere::new(
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-        lambertian.clone(),
-    )));
     world.add(Rc::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        lambertian,
+        material_ground,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
     )));
 
     let cam = Camera::default();

@@ -9,5 +9,7 @@ pub trait Material {
 pub type MaterialPtr = Rc<dyn Material>;
 
 pub mod lambertian;
+pub mod metal;
 
 pub use lambertian::Lambertian;
+pub use metal::Metal;

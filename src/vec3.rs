@@ -36,6 +36,9 @@ impl Vec3 {
         let eps = 1e-8;
         self.x.abs() < eps && self.y.abs() < eps && self.z.abs() < eps
     }
+    pub fn reflect(&self, n: &Self) -> Self {
+        self - 2.0 * self.dot(n) * n
+    }
     pub fn random(rng: &mut Random, min: f64, max: f64) -> Self {
         Self::new(
             rng.range_f64(min, max),
