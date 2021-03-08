@@ -63,6 +63,14 @@ impl Vec3 {
     pub fn random_unit_vector(rng: &mut Random) -> Self {
         Self::random_in_unit_sphere(rng).unit_vector()
     }
+    pub fn random_in_unit_disk(rng: &mut Random) -> Self {
+        loop {
+            let p = Self::new(rng.range_f64(-1.0, 1.0), rng.range_f64(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1. {
+                return p;
+            }
+        }
+    }
 }
 
 impl_op_ex!(-|v: &Vec3| -> Vec3 { Vec3::new(-v.x, -v.y, -v.z) });

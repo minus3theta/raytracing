@@ -64,12 +64,18 @@ fn main() {
         material_right,
     )));
 
+    let lookfrom = Point3::new(3.0, 3.0, 2.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let dist_to_focus = (&lookfrom - &lookat).length();
+
     let cam = Camera::new(
-        Point3::new(-2.0, 2.0, 1.0),
-        Point3::new(0.0, 0.0, -1.0),
+        lookfrom,
+        lookat,
         Vec3::new(0.0, 1.0, 0.0),
         20.0f64.to_radians(),
-        ASPECT_RATIO,
+        16.0 / 9.0,
+        2.0,
+        dist_to_focus,
     );
 
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -80,7 +86,7 @@ fn main() {
             for _ in 0..SAMPLES_PER_PIXEL {
                 let u = (i as f64 + rng.unit_f64()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + rng.unit_f64()) / (IMAGE_HEIGHT - 1) as f64;
-                let r = cam.get_ray(u, v);
+                let r = cam.get_ray(u, v, &mut rng);
                 color_pixel += ray_color(&r, &world, MAX_DEPTH, &mut rng);
             }
 
