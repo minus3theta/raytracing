@@ -6,10 +6,10 @@ use raytracing::hittable::{Hittable, HittableList, Sphere};
 use raytracing::material::{Dielectric, Lambertian, Metal};
 use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: usize = 400;
+const ASPECT_RATIO: f64 = 3.0 / 2.0;
+const IMAGE_WIDTH: usize = 1200;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
-const SAMPLES_PER_PIXEL: usize = 100;
+const SAMPLES_PER_PIXEL: usize = 500;
 const MAX_DEPTH: i32 = 50;
 
 fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Color {
@@ -29,52 +29,80 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
+fn random_scene(rng: &mut Random) -> HittableList {
+    let mut world = HittableList::default();
+
+    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material,
+    )));
+
+    let glass_material = Rc::new(Dielectric::new(1.5));
+    for a in -11..11 {
+        for b in -11..11 {
+            let center = Point3::new(
+                a as f64 + 0.9 * rng.unit_f64(),
+                0.2,
+                b as f64 + 0.9 * rng.unit_f64(),
+            );
+            if (&center - Point3::new(4.0, 0.2, 0.0)).length() <= 0.9 {
+                continue;
+            }
+            let choose_mat = rng.unit_f64();
+            if choose_mat < 0.8 {
+                let albedo = Color::random(rng) * Color::random(rng);
+                let mat = Rc::new(Lambertian::new(albedo));
+                world.add(Rc::new(Sphere::new(center, 0.2, mat)));
+            } else if choose_mat < 0.95 {
+                let albedo = Color::random(rng);
+                let fuzz = rng.range_f64(0.0, 0.5);
+                let mat = Rc::new(Metal::new(albedo, fuzz));
+                world.add(Rc::new(Sphere::new(center, 0.2, mat)));
+            } else {
+                world.add(Rc::new(Sphere::new(center, 0.2, glass_material.clone())));
+            }
+        }
+    }
+
+    world.add(Rc::new(Sphere::new(
+        Point3::new(0.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Dielectric::new(1.5)),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point3::new(4.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+    )));
+
+    world
+}
+
 fn main() {
     let mut rng = Random::default();
 
-    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let world = random_scene(&mut rng);
 
-    let mut world = HittableList::default();
-    world.add(Rc::new(Sphere::new(
-        Point3::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point3::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        material_left,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point3::new(1.0, 0.0, -1.0),
-        0.5,
-        material_right,
-    )));
-
-    let lookfrom = Point3::new(3.0, 3.0, 2.0);
-    let lookat = Point3::new(0.0, 0.0, -1.0);
-    let dist_to_focus = (&lookfrom - &lookat).length();
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         lookfrom,
         lookat,
-        Vec3::new(0.0, 1.0, 0.0),
+        vup,
         20.0f64.to_radians(),
-        16.0 / 9.0,
-        2.0,
+        ASPECT_RATIO,
+        aperture,
         dist_to_focus,
     );
 

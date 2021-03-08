@@ -1,6 +1,6 @@
 use std::ops;
 
-use super::vec3::Vec3;
+use crate::{Random, Vec3};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 pub struct Color(pub Vec3);
@@ -31,6 +31,9 @@ impl Color {
     }
     fn clamp_color(x: f64) -> f64 {
         Self::clamp(x, 0.0, 1.0)
+    }
+    pub fn random(rng: &mut Random) -> Self {
+        Self(Vec3::random(rng, 0.0, 1.0))
     }
 }
 
