@@ -1,6 +1,6 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
-use indicatif::ProgressIterator;
+use indicatif::{ProgressBar, ProgressIterator};
 
 use raytracing::hittable::{Hittable, HittableList, Sphere};
 use raytracing::material::{Dielectric, Lambertian, Metal};
@@ -9,8 +9,9 @@ use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const IMAGE_WIDTH: usize = 1200;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
-const SAMPLES_PER_PIXEL: usize = 500;
+const SAMPLES_PER_PIXEL: usize = 64;
 const MAX_DEPTH: i32 = 50;
+const RECURSION_DEPTH: i32 = 3;
 
 fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Color {
     if depth <= 0 {
@@ -32,14 +33,14 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
 fn random_scene(rng: &mut Random) -> HittableList {
     let mut world = HittableList::default();
 
-    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-    world.add(Rc::new(Sphere::new(
+    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material,
     )));
 
-    let glass_material = Rc::new(Dielectric::new(1.5));
+    let glass_material = Arc::new(Dielectric::new(1.5));
     for a in -11..11 {
         for b in -11..11 {
             let center = Point3::new(
@@ -53,36 +54,86 @@ fn random_scene(rng: &mut Random) -> HittableList {
             let choose_mat = rng.unit_f64();
             if choose_mat < 0.8 {
                 let albedo = Color::random(rng) * Color::random(rng);
-                let mat = Rc::new(Lambertian::new(albedo));
-                world.add(Rc::new(Sphere::new(center, 0.2, mat)));
+                let mat = Arc::new(Lambertian::new(albedo));
+                world.add(Arc::new(Sphere::new(center, 0.2, mat)));
             } else if choose_mat < 0.95 {
                 let albedo = Color::random(rng);
                 let fuzz = rng.range_f64(0.0, 0.5);
-                let mat = Rc::new(Metal::new(albedo, fuzz));
-                world.add(Rc::new(Sphere::new(center, 0.2, mat)));
+                let mat = Arc::new(Metal::new(albedo, fuzz));
+                world.add(Arc::new(Sphere::new(center, 0.2, mat)));
             } else {
-                world.add(Rc::new(Sphere::new(center, 0.2, glass_material.clone())));
+                world.add(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
             }
         }
     }
 
-    world.add(Rc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
-        Rc::new(Dielectric::new(1.5)),
+        Arc::new(Dielectric::new(1.5)),
     )));
-    world.add(Rc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
-        Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+        Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
     )));
-    world.add(Rc::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
-        Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+        Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
     )));
 
     world
+}
+
+type Picture = Vec<Vec<Color>>;
+
+fn render(camera: &Camera, world: &impl Hittable, bar: &mut Option<ProgressBar>) -> Picture {
+    let mut rng = Random::default();
+
+    (0..IMAGE_HEIGHT)
+        .rev()
+        .map(|j| {
+            if let Some(bar) = bar {
+                bar.inc(1);
+            }
+            (0..IMAGE_WIDTH)
+                .map(|i| {
+                    let mut color_pixel = Color::default();
+                    for _ in 0..SAMPLES_PER_PIXEL {
+                        let u = (i as f64 + rng.unit_f64()) / (IMAGE_WIDTH - 1) as f64;
+                        let v = (j as f64 + rng.unit_f64()) / (IMAGE_HEIGHT - 1) as f64;
+                        let r = camera.get_ray(u, v, &mut rng);
+                        color_pixel += ray_color(&r, world, MAX_DEPTH, &mut rng);
+                    }
+
+                    color_pixel / SAMPLES_PER_PIXEL as f64
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn render_recursive(
+    camera: &Camera,
+    world: &(impl Hittable + Send + Sync),
+    depth: i32,
+    bar: &mut Option<ProgressBar>,
+) -> Picture {
+    if depth == 0 {
+        return render(camera, world, bar);
+    }
+    let (mut p1, p2) = rayon::join(
+        || render_recursive(camera, world, depth - 1, bar),
+        || render_recursive(camera, world, depth - 1, &mut None),
+    );
+    for (r1, r2) in p1.iter_mut().zip(&p2) {
+        for (c1, c2) in r1.iter_mut().zip(r2) {
+            *c1 += c2;
+            *c1 /= 2.0;
+        }
+    }
+    p1
 }
 
 fn main() {
@@ -106,19 +157,18 @@ fn main() {
         dist_to_focus,
     );
 
+    let pic = render_recursive(
+        &cam,
+        &world,
+        RECURSION_DEPTH,
+        &mut Some(ProgressBar::new(IMAGE_HEIGHT as u64)),
+    );
+
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    for j in (0..IMAGE_HEIGHT).rev().progress() {
-        for i in 0..IMAGE_WIDTH {
-            let mut color_pixel = Color::default();
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + rng.unit_f64()) / (IMAGE_WIDTH - 1) as f64;
-                let v = (j as f64 + rng.unit_f64()) / (IMAGE_HEIGHT - 1) as f64;
-                let r = cam.get_ray(u, v, &mut rng);
-                color_pixel += ray_color(&r, &world, MAX_DEPTH, &mut rng);
-            }
-
-            println!("{}", color_pixel / SAMPLES_PER_PIXEL as f64);
+    for row in pic.iter().progress() {
+        for color_pixel in row {
+            println!("{}", color_pixel);
         }
     }
 }
