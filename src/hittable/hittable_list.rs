@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::{HitRecord, Hittable};
+use super::{Aabb, HitRecord, Hittable};
 
 #[derive(Clone, Default)]
 pub struct HittableList {
@@ -27,5 +27,14 @@ impl Hittable for HittableList {
             }
         }
         rec
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let mut bb = None;
+        for object in &self.objects {
+            let temp_box = object.as_ref().bounding_box(time0, time1)?;
+            bb = temp_box.merge(&bb);
+        }
+        bb
     }
 }

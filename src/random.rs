@@ -17,6 +17,10 @@ impl Random {
             self.rng.sample(distr)
         }
     }
+    pub fn range_i32(&mut self, min: i32, max: i32) -> i32 {
+        let distr = Uniform::new(min, max);
+        self.rng.sample(distr)
+    }
 }
 
 impl Default for Random {

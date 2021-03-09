@@ -1,8 +1,12 @@
+pub mod aabb;
+pub mod bvh;
 pub mod hittable_list;
 pub mod sphere;
 
 use super::{MaterialPtr, Point3, Ray, Vec3};
 
+pub use aabb::Aabb;
+pub use bvh::BvhNode;
 pub use hittable_list::HittableList;
 pub use sphere::{MovingSphere, Sphere};
 
@@ -35,4 +39,5 @@ impl HitRecord {
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
 }

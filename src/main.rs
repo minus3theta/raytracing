@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use indicatif::{ProgressBar, ProgressIterator};
 
-use raytracing::hittable::{Hittable, HittableList, MovingSphere, Sphere};
+use raytracing::hittable::{BvhNode, Hittable, HittableList, MovingSphere, Sphere};
 use raytracing::material::{Dielectric, Lambertian, Metal};
 use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 
@@ -40,6 +40,8 @@ fn random_scene(rng: &mut Random) -> HittableList {
         ground_material,
     )));
 
+    let mut objects: Vec<Arc<dyn Hittable + Send + Sync>> = Vec::new();
+
     let glass_material = Arc::new(Dielectric::new(1.5));
     for a in -11..11 {
         for b in -11..11 {
@@ -56,19 +58,21 @@ fn random_scene(rng: &mut Random) -> HittableList {
                 let albedo = Color::random(rng) * Color::random(rng);
                 let mat = Arc::new(Lambertian::new(albedo));
                 let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
-                world.add(Arc::new(MovingSphere::new(
+                objects.push(Arc::new(MovingSphere::new(
                     center, center2, 0.0, 1.0, 0.2, mat,
                 )));
             } else if choose_mat < 0.95 {
                 let albedo = Color::random(rng);
                 let fuzz = rng.range_f64(0.0, 0.5);
                 let mat = Arc::new(Metal::new(albedo, fuzz));
-                world.add(Arc::new(Sphere::new(center, 0.2, mat)));
+                objects.push(Arc::new(Sphere::new(center, 0.2, mat)));
             } else {
-                world.add(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
+                objects.push(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
             }
         }
     }
+    let bvh = BvhNode::new(&mut objects, 0.0, 1.0, rng).unwrap();
+    world.add(Arc::new(bvh));
 
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
