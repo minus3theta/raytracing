@@ -37,7 +37,7 @@ impl Material for Dielectric {
 
         Some((
             Color::new(1.0, 1.0, 1.0),
-            Ray::new(rec.p.clone(), direction),
+            Ray::new(rec.p.clone(), direction, r_in.time),
         ))
     }
 }

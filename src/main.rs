@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use indicatif::{ProgressBar, ProgressIterator};
 
-use raytracing::hittable::{Hittable, HittableList, Sphere};
+use raytracing::hittable::{Hittable, HittableList, MovingSphere, Sphere};
 use raytracing::material::{Dielectric, Lambertian, Metal};
 use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 
@@ -55,7 +55,10 @@ fn random_scene(rng: &mut Random) -> HittableList {
             if choose_mat < 0.8 {
                 let albedo = Color::random(rng) * Color::random(rng);
                 let mat = Arc::new(Lambertian::new(albedo));
-                world.add(Arc::new(Sphere::new(center, 0.2, mat)));
+                let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
+                world.add(Arc::new(MovingSphere::new(
+                    center, center2, 0.0, 1.0, 0.2, mat,
+                )));
             } else if choose_mat < 0.95 {
                 let albedo = Color::random(rng);
                 let fuzz = rng.range_f64(0.0, 0.5);
@@ -155,6 +158,8 @@ fn main() {
         ASPECT_RATIO,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     let pic = render_recursive(

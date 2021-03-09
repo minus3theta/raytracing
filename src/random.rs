@@ -10,8 +10,12 @@ impl Random {
         self.rng.sample(Standard)
     }
     pub fn range_f64(&mut self, min: f64, max: f64) -> f64 {
-        let distr = Uniform::new(min, max);
-        self.rng.sample(distr)
+        if min == max {
+            min
+        } else {
+            let distr = Uniform::new(min, max);
+            self.rng.sample(distr)
+        }
     }
 }
 

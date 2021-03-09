@@ -4,7 +4,7 @@ pub mod sphere;
 use super::{MaterialPtr, Point3, Ray, Vec3};
 
 pub use hittable_list::HittableList;
-pub use sphere::Sphere;
+pub use sphere::{MovingSphere, Sphere};
 
 #[derive(Clone)]
 pub struct HitRecord {
