@@ -55,9 +55,13 @@ impl Perlin {
     }
 
     pub fn noise(&self, p: &Point3) -> f64 {
-        let u = p.x - p.x.floor();
-        let v = p.y - p.y.floor();
-        let w = p.z - p.z.floor();
+        fn herm(x: f64) -> f64 {
+            x * x * (3.0 - 2.0 * x)
+        }
+
+        let u = herm(p.x - p.x.floor());
+        let v = herm(p.y - p.y.floor());
+        let w = herm(p.z - p.z.floor());
 
         let i = p.x.floor() as i64;
         let j = p.y.floor() as i64;
