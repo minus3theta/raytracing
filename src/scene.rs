@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
 use crate::material::{Dielectric, Lambertian, Metal};
-use crate::texture::Checker;
+use crate::texture::{Checker, NoiseTexture};
 use crate::{Color, Hittable, Point3, Random, Vec3};
 
 pub struct Scene {
@@ -17,9 +17,9 @@ impl Default for Scene {
     fn default() -> Self {
         Self {
             world: Default::default(),
-            lookfrom: Point3::default(),
+            lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
-            vfov: 40.0f64.to_radians(),
+            vfov: 20.0f64.to_radians(),
             aperture: 0.0,
         }
     }
@@ -92,8 +92,6 @@ impl Scene {
 
         Scene {
             world,
-            lookfrom: Point3::new(13.0, 2.0, 3.0),
-            vfov: 20.0f64.to_radians(),
             aperture: 0.1,
             ..Default::default()
         }
@@ -120,8 +118,24 @@ impl Scene {
 
         Scene {
             world,
-            lookfrom: Point3::new(13.0, 2.0, 3.0),
-            vfov: 20.0f64.to_radians(),
+            ..Default::default()
+        }
+    }
+
+    pub fn two_perlin_spheres(rng: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let pertext = Arc::new(NoiseTexture::new(rng));
+        let mat = Arc::new(Lambertian::new(pertext));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            mat.clone(),
+        )));
+        world.add(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, mat)));
+
+        Scene {
+            world,
             ..Default::default()
         }
     }

@@ -1,5 +1,5 @@
 use rand::distributions::{Standard, Uniform};
-use rand::{rngs::ThreadRng, thread_rng, Rng};
+use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 
 pub struct Random {
     rng: ThreadRng,
@@ -20,6 +20,9 @@ impl Random {
     pub fn range_i32(&mut self, min: i32, max: i32) -> i32 {
         let distr = Uniform::new(min, max);
         self.rng.sample(distr)
+    }
+    pub fn shuffle<T>(&mut self, slice: &mut [T]) {
+        slice.shuffle(&mut self.rng);
     }
 }
 

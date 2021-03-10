@@ -23,6 +23,7 @@ arg_enum! {
     pub enum SceneSelector {
         Random,
         TwoSpheres,
+        TwoPerlinSpheres,
     }
 }
 
@@ -31,6 +32,7 @@ impl SceneSelector {
         match self {
             SceneSelector::Random => Scene::random_scene(rng),
             SceneSelector::TwoSpheres => Scene::two_spheres(rng),
+            SceneSelector::TwoPerlinSpheres => Scene::two_perlin_spheres(rng),
         }
     }
 }
