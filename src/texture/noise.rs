@@ -55,9 +55,45 @@ impl Perlin {
     }
 
     pub fn noise(&self, p: &Point3) -> f64 {
-        fn idx(x: f64) -> usize {
-            ((4.0 * x) as i64).rem_euclid(Perlin::POINT_COUNT as i64) as usize
+        let u = p.x - p.x.floor();
+        let v = p.y - p.y.floor();
+        let w = p.z - p.z.floor();
+
+        let i = p.x.floor() as i64;
+        let j = p.y.floor() as i64;
+        let k = p.z.floor() as i64;
+
+        let mut c = [[[0.0; 2]; 2]; 2];
+
+        fn idx(i: i64, di: usize) -> usize {
+            (i + di as i64).rem_euclid(Perlin::POINT_COUNT as i64) as usize
         }
-        self.ranfloat[idx(p.x) ^ idx(p.y) ^ idx(p.z)]
+
+        for di in 0..2 {
+            for dj in 0..2 {
+                for dk in 0..2 {
+                    c[di][dj][dk] = self.ranfloat[self.perm_x[idx(i, di)]
+                        ^ self.perm_y[idx(j, dj)]
+                        ^ self.perm_z[idx(k, dk)]]
+                }
+            }
+        }
+
+        Self::trilinear_interp(&c, u, v, w)
+    }
+
+    fn trilinear_interp(c: &[[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+        fn fac(i: usize, u: f64) -> f64 {
+            i as f64 * u + (1 - i) as f64 * (1. - u)
+        }
+        let mut accum = 0.0;
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    accum += fac(i, u) * fac(j, v) * fac(k, w) * c[i][j][k];
+                }
+            }
+        }
+        accum
     }
 }
