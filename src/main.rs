@@ -1,11 +1,8 @@
-use std::sync::Arc;
-
 use indicatif::{ProgressBar, ProgressIterator};
 
-use raytracing::hittable::{BvhNode, Hittable, HittableList, MovingSphere, Sphere};
-use raytracing::material::{Dielectric, Lambertian, Metal};
-use raytracing::texture::Checker;
-use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
+use raytracing::hittable::Hittable;
+use raytracing::scene;
+use raytracing::{Camera, Color, Random, Ray, Vec3};
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const IMAGE_WIDTH: usize = 600;
@@ -29,73 +26,6 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
     let unit_direction = r.dir.unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
-}
-
-fn random_scene(rng: &mut Random) -> HittableList {
-    let mut world = HittableList::default();
-
-    let checker = Arc::new(Checker::with_color(
-        Color::new(0.2, 0.3, 0.1),
-        Color::new(0.9, 0.9, 0.9),
-    ));
-    let ground_material = Arc::new(Lambertian::new(checker));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    )));
-
-    let mut objects: Vec<Arc<dyn Hittable + Send + Sync>> = Vec::new();
-
-    let glass_material = Arc::new(Dielectric::new(1.5));
-    for a in -11..11 {
-        for b in -11..11 {
-            let center = Point3::new(
-                a as f64 + 0.9 * rng.unit_f64(),
-                0.2,
-                b as f64 + 0.9 * rng.unit_f64(),
-            );
-            if (&center - Point3::new(4.0, 0.2, 0.0)).length() <= 0.9 {
-                continue;
-            }
-            let choose_mat = rng.unit_f64();
-            if choose_mat < 0.8 {
-                let albedo = Color::random(rng) * Color::random(rng);
-                let mat = Arc::new(Lambertian::with_color(albedo));
-                let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
-                objects.push(Arc::new(MovingSphere::new(
-                    center, center2, 0.0, 1.0, 0.2, mat,
-                )));
-            } else if choose_mat < 0.95 {
-                let albedo = Color::random(rng);
-                let fuzz = rng.range_f64(0.0, 0.5);
-                let mat = Arc::new(Metal::new(albedo, fuzz));
-                objects.push(Arc::new(Sphere::new(center, 0.2, mat)));
-            } else {
-                objects.push(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
-            }
-        }
-    }
-    let bvh = BvhNode::new(&mut objects, 0.0, 1.0, rng).unwrap();
-    world.add(Arc::new(bvh));
-
-    world.add(Arc::new(Sphere::new(
-        Point3::new(0.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Dielectric::new(1.5)),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(-4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Lambertian::with_color(Color::new(0.4, 0.2, 0.1))),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
-    )));
-
-    world
 }
 
 type Picture = Vec<Vec<Color>>;
@@ -151,29 +81,16 @@ fn render_recursive(
 fn main() {
     let mut rng = Random::default();
 
-    let world = random_scene(&mut rng);
+    let sc = scene::random_scene(&mut rng);
 
-    let lookfrom = Point3::new(13.0, 2.0, 3.0);
-    let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
 
-    let cam = Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        20.0f64.to_radians(),
-        ASPECT_RATIO,
-        aperture,
-        dist_to_focus,
-        0.0,
-        1.0,
-    );
+    let cam = Camera::with_scene(&sc, vup, ASPECT_RATIO, dist_to_focus, 0.0, 1.0);
 
     let pic = render_recursive(
         &cam,
-        &world,
+        &sc.world,
         RECURSION_DEPTH,
         &mut Some(ProgressBar::new(IMAGE_HEIGHT as u64)),
     );

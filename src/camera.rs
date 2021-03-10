@@ -1,3 +1,4 @@
+use crate::scene::Scene;
 use crate::{Point3, Random, Ray, Vec3};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone)]
@@ -48,6 +49,27 @@ impl Camera {
             time0,
             time1,
         }
+    }
+
+    pub fn with_scene(
+        scene: &Scene,
+        vup: Vec3,
+        aspect_ratio: f64,
+        focus_dist: f64,
+        time0: f64,
+        time1: f64,
+    ) -> Self {
+        Self::new(
+            scene.lookfrom.clone(),
+            scene.lookat.clone(),
+            vup,
+            scene.vfov,
+            aspect_ratio,
+            scene.aperture,
+            focus_dist,
+            time0,
+            time1,
+        )
     }
 
     pub fn get_ray(&self, u: f64, v: f64, rng: &mut Random) -> Ray {
