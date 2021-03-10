@@ -1,13 +1,10 @@
 use indicatif::{ProgressBar, ProgressIterator};
+use structopt::StructOpt;
 
 use raytracing::hittable::Hittable;
-use raytracing::scene;
-use raytracing::{Camera, Color, Random, Ray, Vec3};
+use raytracing::{Camera, Color, Opt, Random, Ray, Vec3};
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
-const IMAGE_WIDTH: usize = 600;
-const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
-const SAMPLES_PER_PIXEL: usize = 64;
 const MAX_DEPTH: i32 = 50;
 const RECURSION_DEPTH: i32 = 3;
 
@@ -30,26 +27,33 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
 
 type Picture = Vec<Vec<Color>>;
 
-fn render(camera: &Camera, world: &impl Hittable, bar: &mut Option<ProgressBar>) -> Picture {
+fn render(
+    camera: &Camera,
+    world: &impl Hittable,
+    height: usize,
+    width: usize,
+    samples_per_pixel: usize,
+    bar: &mut Option<ProgressBar>,
+) -> Picture {
     let mut rng = Random::default();
 
-    (0..IMAGE_HEIGHT)
+    (0..height)
         .rev()
         .map(|j| {
             if let Some(bar) = bar {
                 bar.inc(1);
             }
-            (0..IMAGE_WIDTH)
+            (0..width)
                 .map(|i| {
                     let mut color_pixel = Color::default();
-                    for _ in 0..SAMPLES_PER_PIXEL {
-                        let u = (i as f64 + rng.unit_f64()) / (IMAGE_WIDTH - 1) as f64;
-                        let v = (j as f64 + rng.unit_f64()) / (IMAGE_HEIGHT - 1) as f64;
+                    for _ in 0..samples_per_pixel {
+                        let u = (i as f64 + rng.unit_f64()) / (width - 1) as f64;
+                        let v = (j as f64 + rng.unit_f64()) / (height - 1) as f64;
                         let r = camera.get_ray(u, v, &mut rng);
                         color_pixel += ray_color(&r, world, MAX_DEPTH, &mut rng);
                     }
 
-                    color_pixel / SAMPLES_PER_PIXEL as f64
+                    color_pixel / samples_per_pixel as f64
                 })
                 .collect()
         })
@@ -59,15 +63,38 @@ fn render(camera: &Camera, world: &impl Hittable, bar: &mut Option<ProgressBar>)
 fn render_recursive(
     camera: &Camera,
     world: &(impl Hittable + Send + Sync),
+    height: usize,
+    width: usize,
+    samples_per_pixel: usize,
     depth: i32,
     bar: &mut Option<ProgressBar>,
 ) -> Picture {
     if depth == 0 {
-        return render(camera, world, bar);
+        return render(camera, world, height, width, samples_per_pixel, bar);
     }
     let (mut p1, p2) = rayon::join(
-        || render_recursive(camera, world, depth - 1, bar),
-        || render_recursive(camera, world, depth - 1, &mut None),
+        || {
+            render_recursive(
+                camera,
+                world,
+                height,
+                width,
+                samples_per_pixel,
+                depth - 1,
+                bar,
+            )
+        },
+        || {
+            render_recursive(
+                camera,
+                world,
+                height,
+                width,
+                samples_per_pixel,
+                depth - 1,
+                &mut None,
+            )
+        },
     );
     for (r1, r2) in p1.iter_mut().zip(&p2) {
         for (c1, c2) in r1.iter_mut().zip(r2) {
@@ -79,9 +106,13 @@ fn render_recursive(
 }
 
 fn main() {
+    let opt = Opt::from_args();
+    let image_width = opt.image_width;
+    let image_height = (image_width as f64 / ASPECT_RATIO) as usize;
+
     let mut rng = Random::default();
 
-    let sc = scene::random_scene(&mut rng);
+    let sc = opt.scene.generate_scene(&mut rng);
 
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
@@ -91,11 +122,14 @@ fn main() {
     let pic = render_recursive(
         &cam,
         &sc.world,
+        image_height,
+        image_width,
+        opt.samples_per_pixel,
         RECURSION_DEPTH,
-        &mut Some(ProgressBar::new(IMAGE_HEIGHT as u64)),
+        &mut Some(ProgressBar::new(image_height as u64)),
     );
 
-    println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+    println!("P3\n{} {}\n255", image_width, image_height);
 
     for row in pic.iter().progress() {
         for color_pixel in row {

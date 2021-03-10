@@ -25,75 +25,104 @@ impl Default for Scene {
     }
 }
 
-pub fn random_scene(rng: &mut Random) -> Scene {
-    let mut world = HittableList::default();
+impl Scene {
+    pub fn random_scene(rng: &mut Random) -> Self {
+        let mut world = HittableList::default();
 
-    let checker = Arc::new(Checker::with_color(
-        Color::new(0.2, 0.3, 0.1),
-        Color::new(0.9, 0.9, 0.9),
-    ));
-    let ground_material = Arc::new(Lambertian::new(checker));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    )));
+        let checker = Arc::new(Checker::with_color(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+        let ground_material = Arc::new(Lambertian::new(checker));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
 
-    let mut objects: Vec<Arc<dyn Hittable + Send + Sync>> = Vec::new();
+        let mut objects: Vec<Arc<dyn Hittable + Send + Sync>> = Vec::new();
 
-    let glass_material = Arc::new(Dielectric::new(1.5));
-    for a in -11..11 {
-        for b in -11..11 {
-            let center = Point3::new(
-                a as f64 + 0.9 * rng.unit_f64(),
-                0.2,
-                b as f64 + 0.9 * rng.unit_f64(),
-            );
-            if (&center - Point3::new(4.0, 0.2, 0.0)).length() <= 0.9 {
-                continue;
-            }
-            let choose_mat = rng.unit_f64();
-            if choose_mat < 0.8 {
-                let albedo = Color::random(rng) * Color::random(rng);
-                let mat = Arc::new(Lambertian::with_color(albedo));
-                let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
-                objects.push(Arc::new(MovingSphere::new(
-                    center, center2, 0.0, 1.0, 0.2, mat,
-                )));
-            } else if choose_mat < 0.95 {
-                let albedo = Color::random(rng);
-                let fuzz = rng.range_f64(0.0, 0.5);
-                let mat = Arc::new(Metal::new(albedo, fuzz));
-                objects.push(Arc::new(Sphere::new(center, 0.2, mat)));
-            } else {
-                objects.push(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
+        let glass_material = Arc::new(Dielectric::new(1.5));
+        for a in -11..11 {
+            for b in -11..11 {
+                let center = Point3::new(
+                    a as f64 + 0.9 * rng.unit_f64(),
+                    0.2,
+                    b as f64 + 0.9 * rng.unit_f64(),
+                );
+                if (&center - Point3::new(4.0, 0.2, 0.0)).length() <= 0.9 {
+                    continue;
+                }
+                let choose_mat = rng.unit_f64();
+                if choose_mat < 0.8 {
+                    let albedo = Color::random(rng) * Color::random(rng);
+                    let mat = Arc::new(Lambertian::with_color(albedo));
+                    let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
+                    objects.push(Arc::new(MovingSphere::new(
+                        center, center2, 0.0, 1.0, 0.2, mat,
+                    )));
+                } else if choose_mat < 0.95 {
+                    let albedo = Color::random(rng);
+                    let fuzz = rng.range_f64(0.0, 0.5);
+                    let mat = Arc::new(Metal::new(albedo, fuzz));
+                    objects.push(Arc::new(Sphere::new(center, 0.2, mat)));
+                } else {
+                    objects.push(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
+                }
             }
         }
+        let bvh = BvhNode::new(&mut objects, 0.0, 1.0, rng).unwrap();
+        world.add(Arc::new(bvh));
+
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, 1.0, 0.0),
+            1.0,
+            Arc::new(Dielectric::new(1.5)),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(-4.0, 1.0, 0.0),
+            1.0,
+            Arc::new(Lambertian::with_color(Color::new(0.4, 0.2, 0.1))),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(4.0, 1.0, 0.0),
+            1.0,
+            Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+        )));
+
+        Scene {
+            world,
+            lookfrom: Point3::new(13.0, 2.0, 3.0),
+            vfov: 20.0f64.to_radians(),
+            aperture: 0.1,
+            ..Default::default()
+        }
     }
-    let bvh = BvhNode::new(&mut objects, 0.0, 1.0, rng).unwrap();
-    world.add(Arc::new(bvh));
 
-    world.add(Arc::new(Sphere::new(
-        Point3::new(0.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Dielectric::new(1.5)),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(-4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Lambertian::with_color(Color::new(0.4, 0.2, 0.1))),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Point3::new(4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
-    )));
+    pub fn two_spheres(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
 
-    Scene {
-        world,
-        lookfrom: Point3::new(13.0, 2.0, 3.0),
-        vfov: 20.0f64.to_radians(),
-        aperture: 0.1,
-        ..Default::default()
+        let checker = Arc::new(Checker::with_color(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+        let mat = Arc::new(Lambertian::new(checker));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -10.0, 0.0),
+            10.0,
+            mat.clone(),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, 10.0, 0.0),
+            10.0,
+            mat,
+        )));
+
+        Scene {
+            world,
+            lookfrom: Point3::new(13.0, 2.0, 3.0),
+            vfov: 20.0f64.to_radians(),
+            ..Default::default()
+        }
     }
 }
