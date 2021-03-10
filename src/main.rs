@@ -7,7 +7,7 @@ use raytracing::material::{Dielectric, Lambertian, Metal};
 use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
-const IMAGE_WIDTH: usize = 1200;
+const IMAGE_WIDTH: usize = 600;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 64;
 const MAX_DEPTH: i32 = 50;
@@ -33,7 +33,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
 fn random_scene(rng: &mut Random) -> HittableList {
     let mut world = HittableList::default();
 
-    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let ground_material = Arc::new(Lambertian::with_color(Color::new(0.5, 0.5, 0.5)));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -56,7 +56,7 @@ fn random_scene(rng: &mut Random) -> HittableList {
             let choose_mat = rng.unit_f64();
             if choose_mat < 0.8 {
                 let albedo = Color::random(rng) * Color::random(rng);
-                let mat = Arc::new(Lambertian::new(albedo));
+                let mat = Arc::new(Lambertian::with_color(albedo));
                 let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
                 objects.push(Arc::new(MovingSphere::new(
                     center, center2, 0.0, 1.0, 0.2, mat,
@@ -82,7 +82,7 @@ fn random_scene(rng: &mut Random) -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+        Arc::new(Lambertian::with_color(Color::new(0.4, 0.2, 0.1))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),

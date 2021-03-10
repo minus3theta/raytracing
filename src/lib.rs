@@ -7,6 +7,7 @@ pub mod hittable;
 pub mod material;
 pub mod random;
 pub mod ray;
+pub mod texture;
 pub mod vec3;
 
 pub use camera::Camera;
@@ -15,4 +16,5 @@ pub use hittable::{HitRecord, Hittable};
 pub use material::{Material, MaterialPtr};
 pub use random::Random;
 pub use ray::Ray;
+pub use texture::{Texture, TexturePtr};
 pub use vec3::{Point3, Vec3};

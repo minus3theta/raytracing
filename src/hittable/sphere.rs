@@ -115,5 +115,22 @@ fn shpere_hit(
     let t = root;
     let p = r.at(t);
     let outward_normal = (&p - center) / radius;
-    Some(HitRecord::new(p, t, r, outward_normal, mat_ptr.clone()))
+    let (u, v) = get_sphere_uv(&outward_normal);
+    Some(HitRecord::new(
+        p,
+        t,
+        u,
+        v,
+        r,
+        outward_normal,
+        mat_ptr.clone(),
+    ))
+}
+
+fn get_sphere_uv(p: &Point3) -> (f64, f64) {
+    use std::f64::consts::{PI, TAU};
+    let theta = (-p.y).acos();
+    let phi = (-p.z).atan2(p.x) + PI;
+
+    (phi / TAU, theta / PI)
 }
