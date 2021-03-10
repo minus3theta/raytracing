@@ -28,13 +28,13 @@ impl BvhNode {
             len => {
                 match rng.range_i32(0, 3) {
                     0 => objects.sort_by_cached_key(|o| {
-                        OrderedFloat(o.as_ref().bounding_box(time0, time1).unwrap().minimum.x)
+                        OrderedFloat(o.bounding_box(time0, time1).unwrap().minimum.x)
                     }),
                     1 => objects.sort_by_cached_key(|o| {
-                        OrderedFloat(o.as_ref().bounding_box(time0, time1).unwrap().minimum.y)
+                        OrderedFloat(o.bounding_box(time0, time1).unwrap().minimum.y)
                     }),
                     _ => objects.sort_by_cached_key(|o| {
-                        OrderedFloat(o.as_ref().bounding_box(time0, time1).unwrap().minimum.z)
+                        OrderedFloat(o.bounding_box(time0, time1).unwrap().minimum.z)
                     }),
                 }
                 let (l, r) = objects.split_at_mut(len / 2);
@@ -60,12 +60,12 @@ impl Hittable for BvhNode {
                 if !bb.hit(r, t_min, t_max) {
                     return None;
                 }
-                let rec_l = left.as_ref().hit(r, t_min, t_max);
+                let rec_l = left.hit(r, t_min, t_max);
                 let t_max = rec_l.as_ref().map_or(t_max, |r| r.t);
-                let rec_r = right.as_ref().hit(r, t_min, t_max);
+                let rec_r = right.hit(r, t_min, t_max);
                 rec_r.or(rec_l)
             }
-            BvhNode::Leaf(h) => h.as_ref().hit(r, t_min, t_max),
+            BvhNode::Leaf(h) => h.hit(r, t_min, t_max),
         }
     }
 

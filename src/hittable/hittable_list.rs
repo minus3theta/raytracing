@@ -21,7 +21,7 @@ impl Hittable for HittableList {
         let mut rec = None;
         let mut closest_so_far = t_max;
         for object in &self.objects {
-            if let Some(temp_rec) = object.as_ref().hit(r, t_min, closest_so_far) {
+            if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
                 closest_so_far = temp_rec.t;
                 rec.replace(temp_rec);
             }
@@ -32,7 +32,7 @@ impl Hittable for HittableList {
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
         let mut bb = None;
         for object in &self.objects {
-            let temp_box = object.as_ref().bounding_box(time0, time1)?;
+            let temp_box = object.bounding_box(time0, time1)?;
             bb = temp_box.merge(&bb);
         }
         bb

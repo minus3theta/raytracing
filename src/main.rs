@@ -19,7 +19,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        if let Some((attenuation, scattered)) = rec.mat_ptr.as_ref().scatter(r, &rec, rng) {
+        if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {
             return attenuation * ray_color(&scattered, world, depth - 1, rng);
         }
         return Color::default();
