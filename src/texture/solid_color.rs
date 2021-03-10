@@ -20,3 +20,9 @@ impl Texture for SolidColor {
         self.color_value.clone()
     }
 }
+
+impl From<Color> for SolidColor {
+    fn from(color_value: Color) -> Self {
+        Self::new(color_value)
+    }
+}

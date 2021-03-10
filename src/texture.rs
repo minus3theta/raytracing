@@ -1,5 +1,7 @@
+pub mod checker;
 pub mod solid_color;
 
+pub use checker::Checker;
 pub use solid_color::SolidColor;
 
 use std::sync::Arc;

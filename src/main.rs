@@ -4,6 +4,7 @@ use indicatif::{ProgressBar, ProgressIterator};
 
 use raytracing::hittable::{BvhNode, Hittable, HittableList, MovingSphere, Sphere};
 use raytracing::material::{Dielectric, Lambertian, Metal};
+use raytracing::texture::Checker;
 use raytracing::{Camera, Color, Point3, Random, Ray, Vec3};
 
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
@@ -33,7 +34,11 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Co
 fn random_scene(rng: &mut Random) -> HittableList {
     let mut world = HittableList::default();
 
-    let ground_material = Arc::new(Lambertian::with_color(Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(Checker::with_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+    let ground_material = Arc::new(Lambertian::new(checker));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
