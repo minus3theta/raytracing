@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::background::{dark, sky, BackgroundPtr};
-use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere, XYRect};
+use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect, YZRect};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
 use crate::{Color, HittablePtr, Point3, Random, Vec3};
@@ -178,6 +178,38 @@ impl Scene {
             background: dark(),
             lookfrom: Point3::new(26.0, 3.0, 6.0),
             lookat: Point3::new(0.0, 2.0, 0.0),
+            ..Default::default()
+        }
+    }
+
+    pub fn cornell_box(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let red = Arc::new(Lambertian::with_color(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::with_color(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::with_color(Color::new(15.0, 15.0, 15.0)));
+
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
+        world.add(Arc::new(XZRect::new(213., 343., 227., 332., 554., light)));
+        world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
+        world.add(Arc::new(XZRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+        world.add(Arc::new(XYRect::new(0., 555., 0., 555., 555., white)));
+
+        Scene {
+            world,
+            background: dark(),
+            lookfrom: Point3::new(278., 278., -800.),
+            lookat: Point3::new(278., 278., 0.),
+            vfov: 40.0f64.to_radians(),
             ..Default::default()
         }
     }

@@ -11,7 +11,7 @@ use super::{MaterialPtr, Point3, Ray, Vec3};
 pub use aabb::Aabb;
 pub use bvh::BvhNode;
 pub use hittable_list::HittableList;
-pub use rect::XYRect;
+pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};
 
 #[derive(Clone)]
