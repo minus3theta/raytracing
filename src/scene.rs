@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use crate::background::{dark, sky, BackgroundPtr};
-use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect, YZRect};
+use crate::hittable::{
+    BoxObj, BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect, YZRect,
+};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
 use crate::{Color, HittablePtr, Point3, Random, Vec3};
@@ -202,7 +204,25 @@ impl Scene {
             555.,
             white.clone(),
         )));
-        world.add(Arc::new(XYRect::new(0., 555., 0., 555., 555., white)));
+        world.add(Arc::new(XYRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+
+        world.add(Arc::new(BoxObj::new(
+            Point3::new(130., 0., 65.),
+            Point3::new(295., 165., 230.),
+            white.clone(),
+        )));
+        world.add(Arc::new(BoxObj::new(
+            Point3::new(265., 0., 295.),
+            Point3::new(430., 330., 460.),
+            white.clone(),
+        )));
 
         Scene {
             world,

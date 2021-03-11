@@ -1,4 +1,5 @@
 pub mod aabb;
+pub mod box_obj;
 pub mod bvh;
 pub mod hittable_list;
 pub mod rect;
@@ -9,6 +10,7 @@ use std::sync::Arc;
 use super::{MaterialPtr, Point3, Ray, Vec3};
 
 pub use aabb::Aabb;
+pub use box_obj::BoxObj;
 pub use bvh::BvhNode;
 pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
