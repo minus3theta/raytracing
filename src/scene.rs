@@ -125,7 +125,7 @@ impl Scene {
     pub fn two_perlin_spheres(rng: &mut Random) -> Self {
         let mut world = HittableList::default();
 
-        let pertext = Arc::new(NoiseTexture::new(4.0, rng));
+        let pertext = Arc::new(NoiseTexture::with_rng(4.0, rng));
         let mat = Arc::new(Lambertian::new(pertext));
         world.add(Arc::new(Sphere::new(
             Point3::new(0.0, -1000.0, 0.0),
