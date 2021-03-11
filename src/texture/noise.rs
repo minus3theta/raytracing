@@ -28,6 +28,31 @@ impl Texture for NoiseTexture {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Turbulence {
+    noise: Arc<Perlin>,
+    scale: f64,
+}
+
+impl Turbulence {
+    pub fn new(noise: Arc<Perlin>, scale: f64) -> Self {
+        Self { noise, scale }
+    }
+
+    pub fn with_rng(scale: f64, rng: &mut Random) -> Self {
+        Self {
+            scale,
+            noise: Arc::new(Perlin::new(rng)),
+        }
+    }
+}
+
+impl Texture for Turbulence {
+    fn value(&self, _: f64, _: f64, p: &Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.turb(self.scale * p, 7)
+    }
+}
+
 type Perm = [usize; Perlin::POINT_COUNT];
 
 #[derive(Debug, Clone)]
@@ -110,5 +135,18 @@ impl Perlin {
             }
         }
         accum
+    }
+
+    pub fn turb(&self, mut p: Point3, depth: i32) -> f64 {
+        let mut accum = 0.0;
+        let mut weight = 1.0;
+
+        for _ in 0..depth {
+            accum += weight * self.noise(&p);
+            weight *= 0.5;
+            p *= 2.0;
+        }
+
+        accum.abs()
     }
 }

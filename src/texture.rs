@@ -3,7 +3,7 @@ pub mod noise;
 pub mod solid_color;
 
 pub use checker::Checker;
-pub use noise::NoiseTexture;
+pub use noise::{NoiseTexture, Turbulence};
 pub use solid_color::SolidColor;
 
 use std::sync::Arc;
