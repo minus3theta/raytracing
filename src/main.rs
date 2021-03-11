@@ -1,6 +1,7 @@
 use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
+use raytracing::background::BackgroundPtr;
 use raytracing::hittable::Hittable;
 use raytracing::{Camera, Color, Opt, Random, Ray, Vec3};
 
@@ -8,21 +9,25 @@ const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const MAX_DEPTH: i32 = 50;
 const RECURSION_DEPTH: i32 = 3;
 
-fn ray_color(r: &Ray, world: &impl Hittable, depth: i32, rng: &mut Random) -> Color {
+fn ray_color(
+    r: &Ray,
+    world: &impl Hittable,
+    background: &BackgroundPtr,
+    depth: i32,
+    rng: &mut Random,
+) -> Color {
     if depth <= 0 {
         return Color::default();
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
         if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {
-            return attenuation * ray_color(&scattered, world, depth - 1, rng);
+            return attenuation * ray_color(&scattered, world, background, depth - 1, rng);
         }
         return Color::default();
     }
 
-    let unit_direction = r.dir.unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+    background.value(r)
 }
 
 type Picture = Vec<Vec<Color>>;
@@ -30,6 +35,7 @@ type Picture = Vec<Vec<Color>>;
 fn render(
     camera: &Camera,
     world: &impl Hittable,
+    background: &BackgroundPtr,
     height: usize,
     width: usize,
     samples_per_pixel: usize,
@@ -50,7 +56,7 @@ fn render(
                         let u = (i as f64 + rng.unit_f64()) / (width - 1) as f64;
                         let v = (j as f64 + rng.unit_f64()) / (height - 1) as f64;
                         let r = camera.get_ray(u, v, &mut rng);
-                        color_pixel += ray_color(&r, world, MAX_DEPTH, &mut rng);
+                        color_pixel += ray_color(&r, world, background, MAX_DEPTH, &mut rng);
                     }
 
                     color_pixel / samples_per_pixel as f64
@@ -63,6 +69,7 @@ fn render(
 fn render_recursive(
     camera: &Camera,
     world: &(impl Hittable + Send + Sync),
+    background: &BackgroundPtr,
     height: usize,
     width: usize,
     samples_per_pixel: usize,
@@ -70,13 +77,22 @@ fn render_recursive(
     bar: &mut Option<ProgressBar>,
 ) -> Picture {
     if depth == 0 {
-        return render(camera, world, height, width, samples_per_pixel, bar);
+        return render(
+            camera,
+            world,
+            background,
+            height,
+            width,
+            samples_per_pixel,
+            bar,
+        );
     }
     let (mut p1, p2) = rayon::join(
         || {
             render_recursive(
                 camera,
                 world,
+                background,
                 height,
                 width,
                 samples_per_pixel,
@@ -88,6 +104,7 @@ fn render_recursive(
             render_recursive(
                 camera,
                 world,
+                background,
                 height,
                 width,
                 samples_per_pixel,
@@ -122,6 +139,7 @@ fn main() {
     let pic = render_recursive(
         &cam,
         &sc.world,
+        &sc.background,
         image_height,
         image_width,
         opt.samples_per_pixel,

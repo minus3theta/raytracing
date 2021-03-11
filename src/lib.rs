@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate impl_ops;
 
+pub mod background;
 pub mod camera;
 pub mod color;
 pub mod hittable;

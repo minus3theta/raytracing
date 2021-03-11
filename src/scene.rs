@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::background::{sky, BackgroundPtr};
 use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
@@ -7,6 +8,7 @@ use crate::{Color, HittablePtr, Point3, Random, Vec3};
 
 pub struct Scene {
     pub world: HittableList,
+    pub background: BackgroundPtr,
     pub lookfrom: Point3,
     pub lookat: Point3,
     pub vfov: f64,
@@ -17,6 +19,7 @@ impl Default for Scene {
     fn default() -> Self {
         Self {
             world: Default::default(),
+            background: sky(),
             lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
             vfov: 20.0f64.to_radians(),
