@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use crate::background::{sky, BackgroundPtr};
-use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
-use crate::material::{Dielectric, Lambertian, Metal};
+use crate::background::{dark, sky, BackgroundPtr};
+use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere, XYRect};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
 use crate::{Color, HittablePtr, Point3, Random, Vec3};
 
@@ -154,6 +154,30 @@ impl Scene {
 
         Scene {
             world,
+            ..Default::default()
+        }
+    }
+
+    pub fn simple_light(rng: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let pertext = Arc::new(Marble::with_rng(4.0, rng));
+        let mat = Arc::new(Lambertian::new(pertext));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            mat.clone(),
+        )));
+        world.add(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, mat)));
+
+        let difflight = Arc::new(DiffuseLight::with_color(Color::new(4.0, 4.0, 4.0)));
+        world.add(Arc::new(XYRect::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight)));
+
+        Scene {
+            world,
+            background: dark(),
+            lookfrom: Point3::new(26.0, 3.0, 6.0),
+            lookat: Point3::new(0.0, 2.0, 0.0),
             ..Default::default()
         }
     }
