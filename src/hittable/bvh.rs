@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use ordered_float::OrderedFloat;
 
-use super::{Aabb, Hittable};
+use super::{Aabb, Hittable, HittablePtr};
 use crate::Random;
 
 #[derive(Clone)]
@@ -12,12 +10,12 @@ pub enum BvhNode {
         right: Box<BvhNode>,
         bb: Aabb,
     },
-    Leaf(Arc<dyn Hittable + Sync + Send>),
+    Leaf(HittablePtr),
 }
 
 impl BvhNode {
     pub fn new(
-        objects: &mut [Arc<dyn Hittable + Sync + Send>],
+        objects: &mut [HittablePtr],
         time0: f64,
         time1: f64,
         rng: &mut Random,

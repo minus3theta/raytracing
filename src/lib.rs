@@ -14,7 +14,7 @@ pub mod vec3;
 
 pub use camera::Camera;
 pub use color::Color;
-pub use hittable::{HitRecord, Hittable};
+pub use hittable::{HitRecord, Hittable, HittablePtr};
 pub use material::{Material, MaterialPtr};
 pub use opt::Opt;
 pub use random::Random;

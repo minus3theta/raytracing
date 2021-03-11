@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
-use crate::{Color, Hittable, Point3, Random, Vec3};
+use crate::{Color, HittablePtr, Point3, Random, Vec3};
 
 pub struct Scene {
     pub world: HittableList,
@@ -40,7 +40,7 @@ impl Scene {
             ground_material,
         )));
 
-        let mut objects: Vec<Arc<dyn Hittable + Send + Sync>> = Vec::new();
+        let mut objects: Vec<HittablePtr> = Vec::new();
 
         let glass_material = Arc::new(Dielectric::new(1.5));
         for a in -11..11 {
