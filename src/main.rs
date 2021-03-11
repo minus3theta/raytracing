@@ -21,13 +21,16 @@ fn ray_color(
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {
-            return attenuation * ray_color(&scattered, world, background, depth - 1, rng);
-        }
-        return Color::default();
-    }
+        let emmited = rec.mat_ptr.emmitted(rec.u, rec.v, &rec.p);
 
-    background.value(r)
+        if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {
+            emmited + attenuation * ray_color(&scattered, world, background, depth - 1, rng)
+        } else {
+            emmited
+        }
+    } else {
+        background.value(r)
+    }
 }
 
 type Picture = Vec<Vec<Color>>;

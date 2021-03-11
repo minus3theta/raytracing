@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
 use super::Material;
+
+use crate::texture::SolidColor;
 use crate::{Color, HitRecord, Point3, Random, Ray, TexturePtr};
 
 #[derive(Clone)]
@@ -9,6 +13,10 @@ pub struct DiffuseLight {
 impl DiffuseLight {
     pub fn new(emit: TexturePtr) -> Self {
         Self { emit }
+    }
+
+    pub fn with_color(color: Color) -> Self {
+        Self::new(Arc::new(SolidColor::new(color)))
     }
 }
 
