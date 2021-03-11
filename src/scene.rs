@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
 use crate::material::{Dielectric, Lambertian, Metal};
-use crate::texture::{Checker, Marble};
+use crate::texture::{Checker, ImageTexture, Marble};
 use crate::{Color, Hittable, Point3, Random, Vec3};
 
 pub struct Scene {
@@ -133,6 +133,21 @@ impl Scene {
             mat.clone(),
         )));
         world.add(Arc::new(Sphere::new(Point3::new(0.0, 2.0, 0.0), 2.0, mat)));
+
+        Scene {
+            world,
+            ..Default::default()
+        }
+    }
+
+    pub fn earth(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let earth_texture = Arc::new(ImageTexture::new("res/earthmap.jpg").unwrap());
+        let earth_surface = Arc::new(Lambertian::new(earth_texture));
+        let globe = Arc::new(Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0, earth_surface));
+
+        world.add(globe);
 
         Scene {
             world,

@@ -20,17 +20,8 @@ impl Color {
     pub fn b(&self) -> u8 {
         (RGB_SCALE * Self::clamp_color(self.0.z.sqrt())) as u8
     }
-    fn clamp(x: f64, min: f64, max: f64) -> f64 {
-        if x < min {
-            min
-        } else if x > max {
-            max
-        } else {
-            x
-        }
-    }
     fn clamp_color(x: f64) -> f64 {
-        Self::clamp(x, 0.0, 1.0)
+        x.clamp(0.0, 1.0)
     }
     pub fn random(rng: &mut Random) -> Self {
         Self(Vec3::random(rng, 0.0, 1.0))

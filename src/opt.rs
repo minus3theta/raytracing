@@ -13,7 +13,7 @@ pub struct Opt {
     #[structopt(short = "s", long = "samples", default_value = "64")]
     pub samples_per_pixel: usize,
 
-    /// Scenes (random or twospheres)
+    /// Scenes (random, twospheres, twoperlinspheres, earth)
     #[structopt(default_value = "random")]
     pub scene: SceneSelector,
 }
@@ -24,6 +24,7 @@ arg_enum! {
         Random,
         TwoSpheres,
         TwoPerlinSpheres,
+        Earth,
     }
 }
 
@@ -33,6 +34,7 @@ impl SceneSelector {
             SceneSelector::Random => Scene::random_scene(rng),
             SceneSelector::TwoSpheres => Scene::two_spheres(rng),
             SceneSelector::TwoPerlinSpheres => Scene::two_perlin_spheres(rng),
+            SceneSelector::Earth => Scene::earth(rng),
         }
     }
 }
