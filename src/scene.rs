@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::hittable::{BvhNode, HittableList, MovingSphere, Sphere};
 use crate::material::{Dielectric, Lambertian, Metal};
-use crate::texture::{Checker, NoiseTexture};
+use crate::texture::{Checker, Marble};
 use crate::{Color, Hittable, Point3, Random, Vec3};
 
 pub struct Scene {
@@ -125,7 +125,7 @@ impl Scene {
     pub fn two_perlin_spheres(rng: &mut Random) -> Self {
         let mut world = HittableList::default();
 
-        let pertext = Arc::new(NoiseTexture::with_rng(4.0, rng));
+        let pertext = Arc::new(Marble::with_rng(4.0, rng));
         let mat = Arc::new(Lambertian::new(pertext));
         world.add(Arc::new(Sphere::new(
             Point3::new(0.0, -1000.0, 0.0),

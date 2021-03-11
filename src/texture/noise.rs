@@ -53,6 +53,33 @@ impl Texture for Turbulence {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Marble {
+    noise: Arc<Perlin>,
+    scale: f64,
+}
+
+impl Marble {
+    pub fn new(noise: Arc<Perlin>, scale: f64) -> Self {
+        Self { noise, scale }
+    }
+
+    pub fn with_rng(scale: f64, rng: &mut Random) -> Self {
+        Self {
+            scale,
+            noise: Arc::new(Perlin::new(rng)),
+        }
+    }
+}
+
+impl Texture for Marble {
+    fn value(&self, _: f64, _: f64, p: &Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0)
+            * 0.5
+            * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p.clone(), 7)).sin())
+    }
+}
+
 type Perm = [usize; Perlin::POINT_COUNT];
 
 #[derive(Debug, Clone)]
