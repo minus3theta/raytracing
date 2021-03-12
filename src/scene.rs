@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use crate::background::{dark, sky, BackgroundPtr};
 use crate::hittable::{
-    BoxObj, BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect, YZRect,
+    rotate_y, translate, BoxObj, BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect,
+    YZRect,
 };
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
@@ -213,16 +214,22 @@ impl Scene {
             white.clone(),
         )));
 
-        world.add(Arc::new(BoxObj::new(
-            Point3::new(130., 0., 65.),
-            Point3::new(295., 165., 230.),
+        let box1 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 330., 165.),
             white.clone(),
-        )));
-        world.add(Arc::new(BoxObj::new(
-            Point3::new(265., 0., 295.),
-            Point3::new(430., 330., 460.),
+        ));
+        let box1 = rotate_y(box1, 15.);
+        let box1 = translate(box1, Vec3::new(265., 0., 295.));
+        world.add(box1);
+        let box2 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 165., 165.),
             white.clone(),
-        )));
+        ));
+        let box2 = rotate_y(box2, -18.);
+        let box2 = translate(box2, Vec3::new(130., 0., 65.));
+        world.add(box2);
 
         Scene {
             world,

@@ -4,6 +4,7 @@ pub mod bvh;
 pub mod hittable_list;
 pub mod rect;
 pub mod sphere;
+pub mod transform;
 
 use std::sync::Arc;
 
@@ -15,6 +16,7 @@ pub use bvh::BvhNode;
 pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};
+pub use transform::{rotate_y, translate, RotateY, Translate};
 
 #[derive(Clone)]
 pub struct HitRecord {

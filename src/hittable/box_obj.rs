@@ -40,7 +40,6 @@ impl BoxObj {
             p1.y,
             mat.clone(),
         )));
-
         sides.add(Arc::new(XZRect::new(
             p0.x,
             p1.x,
@@ -49,6 +48,7 @@ impl BoxObj {
             p0.y,
             mat.clone(),
         )));
+
         sides.add(Arc::new(YZRect::new(
             p0.y,
             p1.y,
