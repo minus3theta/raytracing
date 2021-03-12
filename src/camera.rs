@@ -26,7 +26,7 @@ impl Camera {
         time0: f64,
         time1: f64,
     ) -> Self {
-        let h = (vfov / 2.0).tan();
+        let h = (vfov.to_radians() / 2.0).tan();
         let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
 
@@ -88,7 +88,7 @@ impl Default for Camera {
             Point3::new(0.0, 0.0, 0.0),
             Point3::new(0.0, 0.0, -1.0),
             Vec3::new(0.0, 1.0, 0.0),
-            90.0f64.to_radians(),
+            90.0,
             16.0 / 9.0,
             0.0,
             1.0,

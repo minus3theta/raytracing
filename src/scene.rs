@@ -25,7 +25,7 @@ impl Default for Scene {
             background: sky(),
             lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
-            vfov: 20.0f64.to_radians(),
+            vfov: 20.0,
             aperture: 0.0,
         }
     }
@@ -236,7 +236,7 @@ impl Scene {
             background: dark(),
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),
-            vfov: 40.0f64.to_radians(),
+            vfov: 40.0,
             ..Default::default()
         }
     }
