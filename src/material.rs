@@ -13,10 +13,12 @@ pub type MaterialPtr = Arc<dyn Material + Send + Sync>;
 
 pub mod dielectric;
 pub mod diffuse_light;
+pub mod isotropic;
 pub mod lambertian;
 pub mod metal;
 
 pub use dielectric::Dielectric;
 pub use diffuse_light::DiffuseLight;
+pub use isotropic::Isotropic;
 pub use lambertian::Lambertian;
 pub use metal::Metal;

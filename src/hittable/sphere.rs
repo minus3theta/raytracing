@@ -1,4 +1,4 @@
-use crate::{Point3, Vec3};
+use crate::{Point3, Random, Vec3};
 
 use super::{Aabb, HitRecord, Hittable, MaterialPtr};
 
@@ -20,7 +20,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
         shpere_hit(&self.center, self.radius, &self.mat_ptr, r, t_min, t_max)
     }
 
@@ -65,7 +65,7 @@ impl MovingSphere {
 }
 
 impl Hittable for MovingSphere {
-    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
         shpere_hit(
             &self.center(r.time),
             self.radius,

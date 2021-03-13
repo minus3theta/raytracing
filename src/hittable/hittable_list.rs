@@ -1,3 +1,5 @@
+use crate::Random;
+
 use super::{Aabb, HitRecord, Hittable, HittablePtr};
 
 #[derive(Clone, Default)]
@@ -15,11 +17,11 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
         let mut rec = None;
         let mut closest_so_far = t_max;
         for object in &self.objects {
-            if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
+            if let Some(temp_rec) = object.hit(r, t_min, closest_so_far, rng) {
                 closest_so_far = temp_rec.t;
                 rec.replace(temp_rec);
             }

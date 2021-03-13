@@ -1,4 +1,4 @@
-use crate::{MaterialPtr, Point3, Ray, Vec3};
+use crate::{MaterialPtr, Point3, Random, Ray, Vec3};
 
 use super::{Aabb, HitRecord, Hittable};
 
@@ -28,7 +28,7 @@ impl XYRect {
 }
 
 impl Hittable for XYRect {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
         let t = (self.k - r.orig.z) / r.dir.z;
         if t < t_min || t > t_max {
             return None;
@@ -83,7 +83,7 @@ impl XZRect {
 }
 
 impl Hittable for XZRect {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
         let t = (self.k - r.orig.y) / r.dir.y;
         if t < t_min || t > t_max {
             return None;
@@ -138,7 +138,7 @@ impl YZRect {
 }
 
 impl Hittable for YZRect {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
         let t = (self.k - r.orig.x) / r.dir.x;
         if t < t_min || t > t_max {
             return None;

@@ -1,6 +1,7 @@
-use std::ops;
+use std::{ops, sync::Arc};
 
-use crate::{Random, Vec3};
+use crate::texture::SolidColor;
+use crate::{Random, TexturePtr, Vec3};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 pub struct Color(pub Vec3);
@@ -42,3 +43,9 @@ impl_op_ex_commutative!(*|c: &Color, t: f64| -> Color { Color(&c.0 * t) });
 
 impl_op_ex!(/|c: &Color, t: f64| -> Color { c * (1.0 / t) });
 impl_op_ex!(/=|c: &mut Color, t: f64| { c.0 /= t });
+
+impl Into<TexturePtr> for Color {
+    fn into(self) -> TexturePtr {
+        Arc::new(SolidColor::new(self))
+    }
+}

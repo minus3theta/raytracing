@@ -27,6 +27,7 @@ arg_enum! {
         Earth,
         SimpleLight,
         CornellBox,
+        CornellSmoke
     }
 }
 
@@ -39,6 +40,7 @@ impl SceneSelector {
             SceneSelector::Earth => Scene::earth(rng),
             SceneSelector::SimpleLight => Scene::simple_light(rng),
             SceneSelector::CornellBox => Scene::cornell_box(rng),
+            SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
         }
     }
 }

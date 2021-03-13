@@ -20,7 +20,7 @@ fn ray_color(
         return Color::default();
     }
 
-    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
         let emmited = rec.mat_ptr.emmitted(rec.u, rec.v, &rec.p);
 
         if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {

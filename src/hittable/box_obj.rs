@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{MaterialPtr, Point3, Ray};
+use crate::{MaterialPtr, Point3, Random, Ray};
 
 use super::{Aabb, HitRecord, Hittable, HittableList, XYRect, XZRect, YZRect};
 
@@ -68,8 +68,8 @@ impl BoxObj {
 }
 
 impl Hittable for BoxObj {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        self.sides.hit(r, t_min, t_max)
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
+        self.sides.hit(r, t_min, t_max, rng)
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {

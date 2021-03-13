@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use crate::background::{dark, sky, BackgroundPtr};
 use crate::hittable::{
-    rotate_y, translate, BoxObj, BvhNode, HittableList, MovingSphere, Sphere, XYRect, XZRect,
-    YZRect,
+    rotate_y, translate, BoxObj, BvhNode, ConstantMedium, HittableList, MovingSphere, Sphere,
+    XYRect, XZRect, YZRect,
 };
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
@@ -230,6 +230,71 @@ impl Scene {
         let box2 = rotate_y(box2, -18.);
         let box2 = translate(box2, Vec3::new(130., 0., 65.));
         world.add(box2);
+
+        Scene {
+            world,
+            background: dark(),
+            lookfrom: Point3::new(278., 278., -800.),
+            lookat: Point3::new(278., 278., 0.),
+            vfov: 40.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn cornell_smoke(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let red = Arc::new(Lambertian::with_color(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::with_color(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::with_color(Color::new(7.0, 7.0, 7.0)));
+
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
+        world.add(Arc::new(XZRect::new(113., 443., 127., 432., 554., light)));
+        world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
+        world.add(Arc::new(XZRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+        world.add(Arc::new(XYRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+
+        let box1 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 330., 165.),
+            white.clone(),
+        ));
+        let box1 = rotate_y(box1, 15.);
+        let box1 = translate(box1, Vec3::new(265., 0., 295.));
+        let box2 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 165., 165.),
+            white.clone(),
+        ));
+        let box2 = rotate_y(box2, -18.);
+        let box2 = translate(box2, Vec3::new(130., 0., 65.));
+
+        world.add(Arc::new(ConstantMedium::new(
+            box1,
+            0.01,
+            Color::new(0.0, 0.0, 0.0),
+        )));
+        world.add(Arc::new(ConstantMedium::new(
+            box2,
+            0.01,
+            Color::new(1.0, 1.0, 1.0),
+        )));
 
         Scene {
             world,

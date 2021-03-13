@@ -1,6 +1,7 @@
 pub mod aabb;
 pub mod box_obj;
 pub mod bvh;
+pub mod constant_medium;
 pub mod hittable_list;
 pub mod rect;
 pub mod sphere;
@@ -8,11 +9,14 @@ pub mod transform;
 
 use std::sync::Arc;
 
+use crate::Random;
+
 use super::{MaterialPtr, Point3, Ray, Vec3};
 
 pub use aabb::Aabb;
 pub use box_obj::BoxObj;
 pub use bvh::BvhNode;
+pub use constant_medium::ConstantMedium;
 pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};
@@ -58,7 +62,7 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
 }
 

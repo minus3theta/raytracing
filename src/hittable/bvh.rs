@@ -1,7 +1,7 @@
 use ordered_float::OrderedFloat;
 
 use super::{Aabb, Hittable, HittablePtr};
-use crate::Random;
+use crate::{HitRecord, Random};
 
 #[derive(Clone)]
 pub enum BvhNode {
@@ -52,18 +52,18 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64) -> Option<crate::HitRecord> {
+    fn hit(&self, r: &crate::Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
         match self {
             BvhNode::Node { left, right, bb } => {
                 if !bb.hit(r, t_min, t_max) {
                     return None;
                 }
-                let rec_l = left.hit(r, t_min, t_max);
+                let rec_l = left.hit(r, t_min, t_max, rng);
                 let t_max = rec_l.as_ref().map_or(t_max, |r| r.t);
-                let rec_r = right.hit(r, t_min, t_max);
+                let rec_r = right.hit(r, t_min, t_max, rng);
                 rec_r.or(rec_l)
             }
-            BvhNode::Leaf(h) => h.hit(r, t_min, t_max),
+            BvhNode::Leaf(h) => h.hit(r, t_min, t_max, rng),
         }
     }
 

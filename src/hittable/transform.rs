@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{Point3, Ray, Vec3};
+use crate::{Point3, Random, Ray, Vec3};
 
 use super::{Aabb, HitRecord, Hittable, HittablePtr};
 
@@ -17,9 +17,9 @@ impl Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
         let moved_r = Ray::new(&r.orig - &self.offset, r.dir.clone(), r.time);
-        let rec = self.obj.hit(&moved_r, t_min, t_max)?;
+        let rec = self.obj.hit(&moved_r, t_min, t_max, rng)?;
         Some(HitRecord {
             p: &rec.p + &self.offset,
             ..rec
@@ -76,7 +76,7 @@ impl RotateY {
 }
 
 impl Hittable for RotateY {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
         let inv = |v: &Vec3| {
             Vec3::new(
                 self.cos_theta * v.x - self.sin_theta * v.z,
@@ -86,7 +86,7 @@ impl Hittable for RotateY {
         };
 
         let rotated_r = Ray::new(inv(&r.orig), inv(&r.dir), r.time);
-        let rec = self.obj.hit(&rotated_r, t_min, t_max)?;
+        let rec = self.obj.hit(&rotated_r, t_min, t_max, rng)?;
 
         let rot = |v: &Vec3| {
             Vec3::new(
