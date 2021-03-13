@@ -13,7 +13,7 @@ pub struct Opt {
     #[structopt(short = "s", long = "samples", default_value = "64")]
     pub samples_per_pixel: usize,
 
-    /// Scenes (random, twospheres, twoperlinspheres, earth, simplelight, cornellbox)
+    /// Scenes (random, twospheres, twoperlinspheres, earth, simplelight, cornellbox, cornellsmoke, finalscene)
     #[structopt(default_value = "random")]
     pub scene: SceneSelector,
 }
@@ -27,7 +27,8 @@ arg_enum! {
         Earth,
         SimpleLight,
         CornellBox,
-        CornellSmoke
+        CornellSmoke,
+        FinalScene,
     }
 }
 
@@ -41,6 +42,7 @@ impl SceneSelector {
             SceneSelector::SimpleLight => Scene::simple_light(rng),
             SceneSelector::CornellBox => Scene::cornell_box(rng),
             SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
+            SceneSelector::FinalScene => Scene::final_scene(rng),
         }
     }
 }

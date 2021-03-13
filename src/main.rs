@@ -5,7 +5,6 @@ use raytracing::background::BackgroundPtr;
 use raytracing::hittable::Hittable;
 use raytracing::{Camera, Color, Opt, Random, Ray, Vec3};
 
-const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const MAX_DEPTH: i32 = 50;
 const RECURSION_DEPTH: i32 = 3;
 
@@ -127,17 +126,18 @@ fn render_recursive(
 
 fn main() {
     let opt = Opt::from_args();
-    let image_width = opt.image_width;
-    let image_height = (image_width as f64 / ASPECT_RATIO) as usize;
 
     let mut rng = Random::default();
 
     let sc = opt.scene.generate_scene(&mut rng);
 
+    let image_width = opt.image_width;
+    let image_height = (image_width as f64 / sc.aspect_ratio) as usize;
+
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
 
-    let cam = Camera::with_scene(&sc, vup, ASPECT_RATIO, dist_to_focus, 0.0, 1.0);
+    let cam = Camera::with_scene(&sc, vup, sc.aspect_ratio, dist_to_focus, 0.0, 1.0);
 
     let pic = render_recursive(
         &cam,

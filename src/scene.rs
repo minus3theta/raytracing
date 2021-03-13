@@ -16,6 +16,7 @@ pub struct Scene {
     pub lookat: Point3,
     pub vfov: f64,
     pub aperture: f64,
+    pub aspect_ratio: f64,
 }
 
 impl Default for Scene {
@@ -27,6 +28,7 @@ impl Default for Scene {
             lookat: Point3::default(),
             vfov: 20.0,
             aperture: 0.0,
+            aspect_ratio: 3.0 / 2.0,
         }
     }
 }
@@ -237,6 +239,7 @@ impl Scene {
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),
             vfov: 40.0,
+            aspect_ratio: 1.0,
             ..Default::default()
         }
     }
@@ -302,6 +305,124 @@ impl Scene {
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),
             vfov: 40.0,
+            aspect_ratio: 1.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn final_scene(rng: &mut Random) -> Scene {
+        let mut world = HittableList::default();
+
+        let mut boxes1: Vec<HittablePtr> = Vec::new();
+        let ground = Arc::new(Lambertian::new(Color::new(0.48, 0.83, 0.53).into()));
+        let boxes_per_side = 20;
+        for i in 0..boxes_per_side {
+            for j in 0..boxes_per_side {
+                let i = i as f64;
+                let j = j as f64;
+
+                let w = 100.0;
+                let x0 = -1000.0 + i * w;
+                let z0 = -1000.0 + j * w;
+                let y0 = 0.0;
+                let x1 = x0 + w;
+                let y1 = rng.range_f64(1.0, 101.0);
+                let z1 = z0 + w;
+
+                boxes1.push(Arc::new(BoxObj::new(
+                    Point3::new(x0, y0, z0),
+                    Point3::new(x1, y1, z1),
+                    ground.clone(),
+                )));
+            }
+        }
+        world.add(Arc::new(BvhNode::new(&mut boxes1, 0.0, 1.0, rng).unwrap()));
+
+        let light = Arc::new(DiffuseLight::with_color(Color::new(7., 7., 7.)));
+        world.add(Arc::new(XZRect::new(123., 423., 147., 412., 554., light)));
+
+        let center0 = Point3::new(400., 400., 200.);
+        let center1 = &center0 + Vec3::new(30.0, 0.0, 0.0);
+        let moving_sphere_material = Arc::new(Lambertian::with_color(Color::new(0.7, 0.3, 0.1)));
+        world.add(Arc::new(MovingSphere::new(
+            center0,
+            center1,
+            0.0,
+            1.0,
+            50.0,
+            moving_sphere_material,
+        )));
+
+        let dielectric = Arc::new(Dielectric::new(1.5));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(260.0, 150.0, 45.0),
+            50.0,
+            dielectric.clone(),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, 150.0, 145.0),
+            50.0,
+            Arc::new(Metal::new(Color::new(0.8, 0.8, 0.9), 1.0)),
+        )));
+
+        let boundary = Arc::new(Sphere::new(
+            Point3::new(360., 150., 145.),
+            70.,
+            dielectric.clone(),
+        ));
+        world.add(boundary.clone());
+        world.add(Arc::new(ConstantMedium::new(
+            boundary,
+            0.2,
+            Color::new(0.2, 0.4, 0.9),
+        )));
+        let boundary = Arc::new(Sphere::new(Point3::new(0., 0., 0.), 5000., dielectric));
+        world.add(Arc::new(ConstantMedium::new(
+            boundary,
+            0.0001,
+            Color::new(1.0, 1.0, 1.0),
+        )));
+
+        let emat = Arc::new(Lambertian::new(Arc::new(
+            ImageTexture::new("res/earthmap.jpg").unwrap(),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(400., 200., 400.),
+            100.,
+            emat,
+        )));
+        let pertext = Arc::new(Marble::with_rng(0.1, rng));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(220., 280., 300.),
+            80.,
+            Arc::new(Lambertian::new(pertext)),
+        )));
+
+        let mut boxes2: Vec<HittablePtr> = Vec::new();
+        let white = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let ns = 1000;
+        for _ in 0..ns {
+            boxes2.push(Arc::new(Sphere::new(
+                Point3::random(rng, 0.0, 165.),
+                10.,
+                white.clone(),
+            )))
+        }
+        world.add(translate(
+            rotate_y(
+                Arc::new(BvhNode::new(&mut boxes2, 0.0, 1.0, rng).unwrap()),
+                15.,
+            ),
+            Vec3::new(-100., 270., 395.),
+        ));
+
+        Scene {
+            world,
+            background: dark(),
+            lookfrom: Point3::new(478., 278., -600.),
+            lookat: Point3::new(278., 278., 0.),
+            vfov: 40.0,
+            aspect_ratio: 1.0,
             ..Default::default()
         }
     }
