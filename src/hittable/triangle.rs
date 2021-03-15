@@ -1,9 +1,4 @@
-use mathru::{
-    algebra::linear::{matrix::Solve, Matrix, Vector},
-    matrix, vector,
-};
-
-use crate::{MaterialPtr, Point3, Random, Ray, Vec3};
+use crate::{algebra::solve_equation, MaterialPtr, Point3, Random, Ray, Vec3};
 
 use super::{Aabb, HitRecord, Hittable};
 
@@ -45,20 +40,16 @@ impl Triangle {
 
 impl Hittable for Triangle {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, _: &mut Random) -> Option<HitRecord> {
-        let coef = matrix![
-            r.dir.x, -self.a.x, -self.b.x;
-            r.dir.y, -self.a.y, -self.b.y;
-            r.dir.z, -self.a.z, -self.b.z
-        ];
+        let coef = Vec3::to_matrix(&r.dir, &-&self.a, &-&self.b);
         let rhs = &self.p0 - &r.orig;
-        let rhs = vector![rhs.x; rhs.y; rhs.z];
-        let tuv = coef.solve(&rhs).ok()?;
-        let t = *tuv.get(0);
+        let rhs = rhs.into();
+        let tuv = solve_equation(coef, rhs);
+        let t = tuv[0];
         if t < t_min || t > t_max {
             return None;
         }
-        let u = *tuv.get(1);
-        let v = *tuv.get(2);
+        let u = tuv[1];
+        let v = tuv[2];
         if u < 0.0 || v < 0.0 || u + v > 1.0 {
             return None;
         }

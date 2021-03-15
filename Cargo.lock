@@ -278,15 +278,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "265d751d31d6780a3f956bb5b8022feba2d94eeee5a84ba64f4212eedca42213"
 
 [[package]]
-name = "mathru"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed6f8e0c2b25e756517dcdc1170ee62f4cff8665ef8b150696da516de65dcd7f"
-dependencies = [
- "rand",
-]
-
-[[package]]
 name = "memoffset"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -513,7 +504,6 @@ dependencies = [
  "image",
  "impl_ops",
  "indicatif",
- "mathru",
  "ordered-float",
  "rand",
  "rayon",

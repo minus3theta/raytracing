@@ -1,4 +1,4 @@
-use std::ops;
+use std::{convert::TryFrom, ops};
 
 use crate::Random;
 
@@ -70,6 +70,44 @@ impl Vec3 {
                 return p;
             }
         }
+    }
+    pub fn to_matrix(a: &Self, b: &Self, c: &Self) -> Vec<Vec<f64>> {
+        vec![
+            vec![a.x, b.x, c.x],
+            vec![a.y, b.y, c.y],
+            vec![a.z, b.z, c.z],
+        ]
+    }
+}
+
+impl Into<Vec<f64>> for &Vec3 {
+    fn into(self) -> Vec<f64> {
+        vec![self.x, self.y, self.z]
+    }
+}
+
+impl Into<Vec<f64>> for Vec3 {
+    fn into(self) -> Vec<f64> {
+        (&self).into()
+    }
+}
+
+impl TryFrom<&Vec<f64>> for Vec3 {
+    type Error = ();
+
+    fn try_from(value: &Vec<f64>) -> Result<Self, Self::Error> {
+        if value.len() != 3 {
+            return Err(());
+        }
+        Ok(Self::new(value[0], value[1], value[2]))
+    }
+}
+
+impl TryFrom<Vec<f64>> for Vec3 {
+    type Error = ();
+
+    fn try_from(value: Vec<f64>) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
     }
 }
 
