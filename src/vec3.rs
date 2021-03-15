@@ -111,6 +111,12 @@ impl TryFrom<Vec<f64>> for Vec3 {
     }
 }
 
+impl From<[f32; 3]> for Vec3 {
+    fn from(v: [f32; 3]) -> Self {
+        Self::new(v[0] as f64, v[1] as f64, v[2] as f64)
+    }
+}
+
 impl_op_ex!(-|v: &Vec3| -> Vec3 { Vec3::new(-v.x, -v.y, -v.z) });
 
 impl_op_ex!(+|a: &Vec3, b: &Vec3| -> Vec3 { Vec3::new(a.x + b.x, a.y + b.y, a.z + b.z) });

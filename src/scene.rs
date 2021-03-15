@@ -476,4 +476,31 @@ impl Scene {
             ..Default::default()
         }
     }
+
+    pub fn teapot(rng: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let checker = Arc::new(Checker::with_color(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+        let ground_material = Arc::new(Lambertian::new(checker));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
+
+        let pot_mat = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let pot = BvhNode::load("res/teapot.obj", 0.0, 1.0, pot_mat, rng).unwrap();
+
+        world.add(Arc::new(pot));
+
+        Scene {
+            world,
+            lookfrom: Point3::new(3.0, 2.0, 13.0),
+            vfov: 40.0,
+            ..Default::default()
+        }
+    }
 }

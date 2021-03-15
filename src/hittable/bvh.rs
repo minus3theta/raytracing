@@ -1,7 +1,10 @@
+use std::{path::Path, sync::Arc};
+
+use anyhow::Context;
 use ordered_float::OrderedFloat;
 
-use super::{Aabb, Hittable, HittablePtr};
-use crate::{HitRecord, Random};
+use super::{Aabb, Hittable, HittablePtr, Triangle};
+use crate::{HitRecord, MaterialPtr, Random, Vec3};
 
 #[derive(Clone)]
 pub enum BvhNode {
@@ -48,6 +51,37 @@ impl BvhNode {
                 })
             }
         }
+    }
+    pub fn load(
+        obj_file: impl AsRef<Path>,
+        time0: f64,
+        time1: f64,
+        material: MaterialPtr,
+        rng: &mut Random,
+    ) -> anyhow::Result<Self> {
+        let mut polygons: Vec<HittablePtr> = Vec::new();
+
+        let ob = obj::Obj::load(obj_file)?;
+        let ob = ob.data;
+        let positions = &ob.position;
+        let polys = &ob.objects[0].groups[0].polys;
+
+        for obj::SimplePolygon(poly) in polys {
+            if poly.len() != 3 {
+                todo!();
+            }
+            let mut it = poly
+                .iter()
+                .map(|obj::IndexTuple(i, _, _)| Vec3::from(positions[*i]));
+            let p0 = it.next().unwrap();
+            let p1 = it.next().unwrap();
+            let p2 = it.next().unwrap();
+            let triangle = Triangle::new(p0, p1, p2, material.clone());
+
+            polygons.push(Arc::new(triangle));
+        }
+
+        Ok(Self::new(&mut polygons, time0, time1, rng).context("No bounding box")?)
     }
 }
 
