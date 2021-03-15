@@ -45,4 +45,18 @@ impl Aabb {
             None => Some(self),
         }
     }
+    pub fn wrap(&mut self, eps: f64) {
+        if self.maximum.x - self.minimum.x < 2.0 * eps {
+            self.maximum.x += eps;
+            self.minimum.x -= eps;
+        }
+        if self.maximum.y - self.minimum.y < 2.0 * eps {
+            self.maximum.y += eps;
+            self.minimum.y -= eps;
+        }
+        if self.maximum.z - self.minimum.z < 2.0 * eps {
+            self.maximum.z += eps;
+            self.minimum.z -= eps;
+        }
+    }
 }
