@@ -6,6 +6,7 @@ pub mod hittable_list;
 pub mod rect;
 pub mod sphere;
 pub mod transform;
+pub mod triangle;
 
 use std::sync::Arc;
 
@@ -21,6 +22,7 @@ pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};
 pub use transform::{rotate_y, translate, RotateY, Translate};
+pub use triangle::Triangle;
 
 #[derive(Clone)]
 pub struct HitRecord {

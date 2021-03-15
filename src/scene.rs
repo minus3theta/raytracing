@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::background::{dark, sky, BackgroundPtr};
 use crate::hittable::{
     rotate_y, translate, BoxObj, BvhNode, ConstantMedium, HittableList, MovingSphere, Sphere,
-    XYRect, XZRect, YZRect,
+    Triangle, XYRect, XZRect, YZRect,
 };
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::texture::{Checker, ImageTexture, Marble};
@@ -423,6 +423,56 @@ impl Scene {
             lookat: Point3::new(278., 278., 0.),
             vfov: 40.0,
             aspect_ratio: 1.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn triangle(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let ground_material = Arc::new(Lambertian::with_color(Color::new(0.8, 0.8, 0.0)));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
+
+        let triangle_material = Arc::new(Lambertian::new(Arc::new(
+            ImageTexture::new("res/earthmap.jpg").unwrap(),
+        )));
+        let p0 = Point3::new(1.0, 0.5, 3.0);
+        let p1 = Point3::new(5.0, 1.5, 1.0);
+        let p2 = Point3::new(1.0, 4.0, 1.0);
+        let p3 = Point3::new(2.0, 0.2, -1.0);
+
+        world.add(Arc::new(Triangle::new(
+            p0.clone(),
+            p1.clone(),
+            p2.clone(),
+            triangle_material.clone(),
+        )));
+        world.add(Arc::new(Triangle::new(
+            p0.clone(),
+            p1.clone(),
+            p3.clone(),
+            triangle_material.clone(),
+        )));
+        world.add(Arc::new(Triangle::new(
+            p0.clone(),
+            p2.clone(),
+            p3.clone(),
+            triangle_material.clone(),
+        )));
+        world.add(Arc::new(Triangle::new(
+            p1.clone(),
+            p2.clone(),
+            p3.clone(),
+            triangle_material.clone(),
+        )));
+
+        Scene {
+            world,
+            vfov: 40.0,
             ..Default::default()
         }
     }

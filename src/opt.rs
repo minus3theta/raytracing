@@ -29,6 +29,7 @@ arg_enum! {
         CornellBox,
         CornellSmoke,
         FinalScene,
+        Triangle,
     }
 }
 
@@ -43,6 +44,7 @@ impl SceneSelector {
             SceneSelector::CornellBox => Scene::cornell_box(rng),
             SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
             SceneSelector::FinalScene => Scene::final_scene(rng),
+            SceneSelector::Triangle => Scene::triangle(rng),
         }
     }
 }
