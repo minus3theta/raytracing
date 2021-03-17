@@ -1,7 +1,7 @@
 pub mod aabb;
 pub mod box_obj;
 pub mod bvh;
-pub mod constant_medium;
+// pub mod constant_medium;
 pub mod hittable_list;
 pub mod rect;
 pub mod sphere;
@@ -17,7 +17,7 @@ use super::{MaterialPtr, Point3, Ray, Vec3};
 pub use aabb::Aabb;
 pub use box_obj::BoxObj;
 pub use bvh::BvhNode;
-pub use constant_medium::ConstantMedium;
+// pub use constant_medium::ConstantMedium;
 pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};

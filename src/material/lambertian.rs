@@ -18,16 +18,28 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray, f64)> {
         let scatter_direction = &rec.normal + Vec3::random_unit_vector(rng);
         let scatter_direction = if scatter_direction.near_zero() {
             rec.normal.clone()
         } else {
             scatter_direction
-        };
+        }
+        .unit_vector();
+        let pdf = rec.normal.dot(&scatter_direction) / std::f64::consts::PI;
         Some((
             self.albedo.value(rec.u, rec.v, &rec.p),
             Ray::new(rec.p.clone(), scatter_direction, r_in.time),
+            pdf,
         ))
+    }
+
+    fn scattering_pdf(&self, _: &Ray, rec: &HitRecord, scattered: &Ray) -> f64 {
+        let cosine = rec.normal.dot(&scattered.dir.unit_vector());
+        if cosine < 0.0 {
+            0.0
+        } else {
+            cosine / std::f64::consts::PI
+        }
     }
 }

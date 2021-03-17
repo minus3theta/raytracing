@@ -22,8 +22,12 @@ fn ray_color(
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
         let emmited = rec.mat_ptr.emmitted(rec.u, rec.v, &rec.p);
 
-        if let Some((attenuation, scattered)) = rec.mat_ptr.scatter(r, &rec, rng) {
-            emmited + attenuation * ray_color(&scattered, world, background, depth - 1, rng)
+        if let Some((attenuation, scattered, pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
+            emmited
+                + attenuation
+                    * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
+                    * ray_color(&scattered, world, background, depth - 1, rng)
+                    / pdf
         } else {
             emmited
         }
