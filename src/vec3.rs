@@ -78,6 +78,14 @@ impl Vec3 {
             vec![a.z, b.z, c.z],
         ]
     }
+    pub fn random_in_hemisphere(&self, rng: &mut Random) -> Self {
+        let v = Self::random_in_unit_sphere(rng);
+        if v.dot(self) > 0.0 {
+            v
+        } else {
+            -v
+        }
+    }
 }
 
 impl Into<Vec<f64>> for &Vec3 {
