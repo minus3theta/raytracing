@@ -22,4 +22,4 @@ pub use opt::Opt;
 pub use random::Random;
 pub use ray::Ray;
 pub use texture::{Texture, TexturePtr};
-pub use vec3::{Point3, Vec3};
+pub use vec3::{Onb, Point3, Vec3};

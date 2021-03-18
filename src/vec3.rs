@@ -86,6 +86,18 @@ impl Vec3 {
             -v
         }
     }
+    pub fn random_cosine_direction(rng: &mut Random) -> Self {
+        let r1 = rng.unit_f64();
+        let r2 = rng.unit_f64();
+        let z = (1.0 - r2).sqrt();
+
+        let phi = 2.0 * std::f64::consts::PI * r1;
+        let sqrt_r2 = r2.sqrt();
+        let x = phi.cos() * sqrt_r2;
+        let y = phi.sin() * sqrt_r2;
+
+        Self::new(x, y, z)
+    }
 }
 
 impl Into<Vec<f64>> for &Vec3 {
@@ -163,3 +175,32 @@ impl_op_ex!(/=|v: &mut Vec3, t: f64| {
 });
 
 pub type Point3 = Vec3;
+
+#[derive(Debug, Default, PartialOrd, PartialEq, Clone)]
+pub struct Onb {
+    pub u: Vec3,
+    pub v: Vec3,
+    pub w: Vec3,
+}
+
+impl Onb {
+    pub fn new(n: &Vec3) -> Self {
+        let w = n.unit_vector();
+        let a = if w.x.abs() > 0.9 {
+            Vec3::new(0.0, 1.0, 0.0)
+        } else {
+            Vec3::new(1.0, 0.0, 0.0)
+        };
+        let v = w.cross(&a);
+        let u = w.cross(&v);
+        Self { u, v, w }
+    }
+
+    pub fn local(&self, a: f64, b: f64, c: f64) -> Vec3 {
+        a * &self.u + b * &self.v + c * &self.w
+    }
+
+    pub fn local_vec(&self, a: &Vec3) -> Vec3 {
+        self.local(a.x, a.y, a.z)
+    }
+}
