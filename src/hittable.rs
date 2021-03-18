@@ -21,7 +21,7 @@ pub use bvh::BvhNode;
 pub use hittable_list::HittableList;
 pub use rect::{XYRect, XZRect, YZRect};
 pub use sphere::{MovingSphere, Sphere};
-pub use transform::{rotate_y, translate, RotateY, Translate};
+pub use transform::{rotate_y, translate, FlipFace, RotateY, Translate};
 pub use triangle::Triangle;
 
 #[derive(Clone)]

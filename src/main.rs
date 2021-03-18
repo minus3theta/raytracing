@@ -20,7 +20,7 @@ fn ray_color(
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
-        let emmited = rec.mat_ptr.emmitted(rec.u, rec.v, &rec.p);
+        let emmited = rec.mat_ptr.emmitted(&rec);
 
         if let Some((attenuation, _scattered, _pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
             let on_light = Point3::new(rng.range_f64(213., 343.), 554., rng.range_f64(227., 332.));

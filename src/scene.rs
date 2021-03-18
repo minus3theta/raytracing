@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use crate::background::{dark, sky, BackgroundPtr};
-use crate::hittable::{rotate_y, translate, BoxObj, HittableList, XYRect, XZRect, YZRect};
+use crate::hittable::{
+    rotate_y, translate, BoxObj, FlipFace, HittableList, XYRect, XZRect, YZRect,
+};
 use crate::material::{DiffuseLight, Lambertian};
 use crate::{Color, Point3, Random, Vec3};
 
@@ -193,7 +195,9 @@ impl Scene {
 
         world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
         world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
-        world.add(Arc::new(XZRect::new(213., 343., 227., 332., 554., light)));
+        world.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(
+            213., 343., 227., 332., 554., light,
+        )))));
         world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
         world.add(Arc::new(XZRect::new(
             0.,

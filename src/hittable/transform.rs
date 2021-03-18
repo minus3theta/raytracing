@@ -114,3 +114,28 @@ pub fn translate(obj: HittablePtr, offset: Vec3) -> HittablePtr {
 pub fn rotate_y(obj: HittablePtr, theta: f64) -> HittablePtr {
     Arc::new(RotateY::new(obj, theta))
 }
+
+#[derive(Clone)]
+pub struct FlipFace {
+    obj: HittablePtr,
+}
+
+impl FlipFace {
+    pub fn new(obj: HittablePtr) -> Self {
+        Self { obj }
+    }
+}
+
+impl Hittable for FlipFace {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rng: &mut Random) -> Option<HitRecord> {
+        let rec = self.obj.hit(r, t_min, t_max, rng)?;
+        Some(HitRecord {
+            front_face: !rec.front_face,
+            ..rec
+        })
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        self.obj.bounding_box(time0, time1)
+    }
+}
