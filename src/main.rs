@@ -1,8 +1,8 @@
 use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
-use raytracing::background::BackgroundPtr;
 use raytracing::hittable::Hittable;
+use raytracing::{background::BackgroundPtr, Point3};
 use raytracing::{Camera, Color, Opt, Random, Ray, Vec3};
 
 const MAX_DEPTH: i32 = 50;
@@ -22,7 +22,24 @@ fn ray_color(
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
         let emmited = rec.mat_ptr.emmitted(rec.u, rec.v, &rec.p);
 
-        if let Some((attenuation, scattered, pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
+        if let Some((attenuation, _scattered, _pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
+            let on_light = Point3::new(rng.range_f64(213., 343.), 554., rng.range_f64(227., 332.));
+            let to_light = &on_light - &rec.p;
+            let distance_squared = to_light.length_squared();
+            let to_light = to_light.unit_vector();
+
+            if to_light.dot(&rec.normal) < 0.0 {
+                return emmited;
+            }
+            let light_cosine = to_light.y.abs();
+            if light_cosine < 1e-6 {
+                return emmited;
+            }
+
+            let light_area = ((343 - 213) * (332 - 227)) as f64;
+            let pdf = distance_squared / (light_cosine * light_area);
+            let scattered = Ray::new(rec.p.clone(), to_light, r.time);
+
             emmited
                 + attenuation
                     * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
