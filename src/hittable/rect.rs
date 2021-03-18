@@ -1,6 +1,6 @@
 use crate::{MaterialPtr, Point3, Random, Ray, Vec3};
 
-use super::{Aabb, HitRecord, Hittable};
+use super::{Aabb, Emittable, HitRecord, Hittable};
 
 const EPS: f64 = 0.0001;
 
@@ -111,6 +111,32 @@ impl Hittable for XZRect {
             Point3::new(self.x0, self.k - EPS, self.z0),
             Point3::new(self.x1, self.k + EPS, self.z1),
         ))
+    }
+}
+
+impl Emittable for XZRect {
+    fn pdf_value(&self, o: &Point3, v: &Vec3, rng: &mut Random) -> f64 {
+        let ray = Ray::new(o.clone(), v.clone(), 0.0);
+        let rec = if let Some(rec) = self.hit(&ray, 0.001, f64::INFINITY, rng) {
+            rec
+        } else {
+            return 0.0;
+        };
+
+        let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+        let distance_squared = rec.t.powi(2) * v.length_squared();
+        let cosine = (v.dot(&rec.normal) / v.length()).abs();
+
+        distance_squared / (cosine * area)
+    }
+
+    fn random(&self, o: &Point3, rng: &mut Random) -> Vec3 {
+        let random_point = Point3::new(
+            rng.range_f64(self.x0, self.x1),
+            self.k,
+            rng.range_f64(self.z0, self.z1),
+        );
+        random_point - o
     }
 }
 

@@ -69,3 +69,10 @@ pub trait Hittable {
 }
 
 pub type HittablePtr = Arc<dyn Hittable + Send + Sync>;
+
+pub trait Emittable {
+    fn pdf_value(&self, o: &Point3, v: &Vec3, rng: &mut Random) -> f64;
+    fn random(&self, o: &Point3, rng: &mut Random) -> Vec3;
+}
+
+pub type EmittablePtr = Arc<dyn Emittable + Send + Sync>;

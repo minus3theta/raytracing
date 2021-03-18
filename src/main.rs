@@ -1,16 +1,18 @@
 use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
-use raytracing::hittable::Hittable;
-use raytracing::{background::BackgroundPtr, Point3};
-use raytracing::{Camera, Color, Opt, Random, Ray, Vec3};
+use raytracing::{
+    background::BackgroundPtr, hittable::EmittablePtr, pdf::EmittablePdf, Camera, Color,
+    HittablePtr, Opt, Pdf, Random, Ray, Vec3,
+};
 
 const MAX_DEPTH: i32 = 50;
 const RECURSION_DEPTH: i32 = 3;
 
 fn ray_color(
     r: &Ray,
-    world: &impl Hittable,
+    world: &HittablePtr,
+    lights: &EmittablePtr,
     background: &BackgroundPtr,
     depth: i32,
     rng: &mut Random,
@@ -23,27 +25,14 @@ fn ray_color(
         let emmited = rec.mat_ptr.emmitted(&rec);
 
         if let Some((attenuation, _scattered, _pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
-            let on_light = Point3::new(rng.range_f64(213., 343.), 554., rng.range_f64(227., 332.));
-            let to_light = &on_light - &rec.p;
-            let distance_squared = to_light.length_squared();
-            let to_light = to_light.unit_vector();
-
-            if to_light.dot(&rec.normal) < 0.0 {
-                return emmited;
-            }
-            let light_cosine = to_light.y.abs();
-            if light_cosine < 1e-6 {
-                return emmited;
-            }
-
-            let light_area = ((343 - 213) * (332 - 227)) as f64;
-            let pdf = distance_squared / (light_cosine * light_area);
-            let scattered = Ray::new(rec.p.clone(), to_light, r.time);
+            let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
+            let scattered = Ray::new(rec.p.clone(), light_pdf.generate(rng), r.time);
+            let pdf = light_pdf.value(&scattered.dir, rng);
 
             emmited
                 + attenuation
                     * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
-                    * ray_color(&scattered, world, background, depth - 1, rng)
+                    * ray_color(&scattered, world, lights, background, depth - 1, rng)
                     / pdf
         } else {
             emmited
@@ -57,7 +46,8 @@ type Picture = Vec<Vec<Color>>;
 
 fn render(
     camera: &Camera,
-    world: &impl Hittable,
+    world: &HittablePtr,
+    lights: &EmittablePtr,
     background: &BackgroundPtr,
     height: usize,
     width: usize,
@@ -79,7 +69,8 @@ fn render(
                         let u = (i as f64 + rng.unit_f64()) / (width - 1) as f64;
                         let v = (j as f64 + rng.unit_f64()) / (height - 1) as f64;
                         let r = camera.get_ray(u, v, &mut rng);
-                        color_pixel += ray_color(&r, world, background, MAX_DEPTH, &mut rng);
+                        color_pixel +=
+                            ray_color(&r, world, lights, background, MAX_DEPTH, &mut rng);
                     }
 
                     color_pixel / samples_per_pixel as f64
@@ -91,7 +82,8 @@ fn render(
 
 fn render_recursive(
     camera: &Camera,
-    world: &(impl Hittable + Send + Sync),
+    world: &HittablePtr,
+    lights: &EmittablePtr,
     background: &BackgroundPtr,
     height: usize,
     width: usize,
@@ -103,6 +95,7 @@ fn render_recursive(
         return render(
             camera,
             world,
+            lights,
             background,
             height,
             width,
@@ -115,6 +108,7 @@ fn render_recursive(
             render_recursive(
                 camera,
                 world,
+                lights,
                 background,
                 height,
                 width,
@@ -127,6 +121,7 @@ fn render_recursive(
             render_recursive(
                 camera,
                 world,
+                lights,
                 background,
                 height,
                 width,
@@ -163,6 +158,7 @@ fn main() {
     let pic = render_recursive(
         &cam,
         &sc.world,
+        &sc.lights,
         &sc.background,
         image_height,
         image_width,

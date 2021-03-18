@@ -1,14 +1,18 @@
 use std::sync::Arc;
 
-use crate::background::{dark, sky, BackgroundPtr};
 use crate::hittable::{
-    rotate_y, translate, BoxObj, FlipFace, HittableList, XYRect, XZRect, YZRect,
+    rotate_y, translate, BoxObj, EmittablePtr, FlipFace, HittableList, XYRect, XZRect, YZRect,
 };
 use crate::material::{DiffuseLight, Lambertian};
+use crate::{
+    background::{dark, sky, BackgroundPtr},
+    HittablePtr,
+};
 use crate::{Color, Point3, Random, Vec3};
 
 pub struct Scene {
-    pub world: HittableList,
+    pub world: HittablePtr,
+    pub lights: EmittablePtr,
     pub background: BackgroundPtr,
     pub lookfrom: Point3,
     pub lookat: Point3,
@@ -20,7 +24,15 @@ pub struct Scene {
 impl Default for Scene {
     fn default() -> Self {
         Self {
-            world: Default::default(),
+            world: Arc::new(HittableList::default()),
+            lights: Arc::new(XZRect::new(
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                Arc::new(DiffuseLight::with_color(Color::default())),
+            )),
             background: sky(),
             lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
@@ -195,9 +207,8 @@ impl Scene {
 
         world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
         world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
-        world.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(
-            213., 343., 227., 332., 554., light,
-        )))));
+        let light_rect = Arc::new(XZRect::new(213., 343., 227., 332., 554., light));
+        world.add(Arc::new(FlipFace::new(light_rect.clone())));
         world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
         world.add(Arc::new(XZRect::new(
             0.,
@@ -234,7 +245,8 @@ impl Scene {
         world.add(box2);
 
         Scene {
-            world,
+            world: Arc::new(world),
+            lights: light_rect,
             background: dark(),
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),
