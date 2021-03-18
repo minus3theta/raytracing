@@ -1,5 +1,7 @@
 use crate::{Color, HitRecord, Material, Random, Ray, Vec3};
 
+use super::ScatterRecord;
+
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 pub struct Metal {
     albedo: Color,
@@ -14,7 +16,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<ScatterRecord> {
         let reflected = r_in.dir.unit_vector().reflect(&rec.normal);
         let scattered = Ray::new(
             rec.p.clone(),
@@ -22,7 +24,7 @@ impl Material for Metal {
             r_in.time,
         );
         if scattered.dir.dot(&rec.normal) > 0.0 {
-            Some((self.albedo.clone(), scattered))
+            Some(ScatterRecord::new_specular(self.albedo.clone(), scattered))
         } else {
             None
         }

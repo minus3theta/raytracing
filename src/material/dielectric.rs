@@ -1,5 +1,7 @@
 use crate::{Color, HitRecord, Material, Random, Ray};
 
+use super::ScatterRecord;
+
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 pub struct Dielectric {
     ir: f64,
@@ -16,7 +18,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<ScatterRecord> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -35,7 +37,7 @@ impl Material for Dielectric {
             unit_direction.refract(&rec.normal, refraction_ratio)
         };
 
-        Some((
+        Some(ScatterRecord::new_specular(
             Color::new(1.0, 1.0, 1.0),
             Ray::new(rec.p.clone(), direction, r_in.time),
         ))

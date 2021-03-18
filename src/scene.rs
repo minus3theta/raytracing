@@ -1,12 +1,15 @@
 use std::sync::Arc;
 
-use crate::hittable::{
-    rotate_y, translate, BoxObj, EmittablePtr, FlipFace, HittableList, XYRect, XZRect, YZRect,
-};
 use crate::material::{DiffuseLight, Lambertian};
 use crate::{
     background::{dark, sky, BackgroundPtr},
     HittablePtr,
+};
+use crate::{
+    hittable::{
+        rotate_y, translate, BoxObj, EmittablePtr, FlipFace, HittableList, XYRect, XZRect, YZRect,
+    },
+    material::Metal,
 };
 use crate::{Color, Point3, Random, Vec3};
 
@@ -231,6 +234,66 @@ impl Scene {
             Point3::default(),
             Point3::new(165., 330., 165.),
             white.clone(),
+        ));
+        let box1 = rotate_y(box1, 15.);
+        let box1 = translate(box1, Vec3::new(265., 0., 295.));
+        world.add(box1);
+        let box2 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 165., 165.),
+            white.clone(),
+        ));
+        let box2 = rotate_y(box2, -18.);
+        let box2 = translate(box2, Vec3::new(130., 0., 65.));
+        world.add(box2);
+
+        Scene {
+            world: Arc::new(world),
+            lights: light_rect,
+            background: dark(),
+            lookfrom: Point3::new(278., 278., -800.),
+            lookat: Point3::new(278., 278., 0.),
+            vfov: 40.0,
+            aspect_ratio: 1.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn cornell_metal(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let red = Arc::new(Lambertian::with_color(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::with_color(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::with_color(Color::new(15.0, 15.0, 15.0)));
+
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
+        let light_rect = Arc::new(XZRect::new(213., 343., 227., 332., 554., light));
+        world.add(Arc::new(FlipFace::new(light_rect.clone())));
+        world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
+        world.add(Arc::new(XZRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+        world.add(Arc::new(XYRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+
+        let alminum = Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.0));
+        let box1 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 330., 165.),
+            alminum,
         ));
         let box1 = rotate_y(box1, 15.);
         let box1 = translate(box1, Vec3::new(265., 0., 295.));
