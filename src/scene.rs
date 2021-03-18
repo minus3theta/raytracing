@@ -1,9 +1,13 @@
 use std::sync::Arc;
 
-use crate::material::{DiffuseLight, Lambertian};
 use crate::{
     background::{dark, sky, BackgroundPtr},
+    material::Dielectric,
     HittablePtr,
+};
+use crate::{
+    hittable::Sphere,
+    material::{DiffuseLight, Lambertian},
 };
 use crate::{
     hittable::{
@@ -28,14 +32,7 @@ impl Default for Scene {
     fn default() -> Self {
         Self {
             world: Arc::new(HittableList::default()),
-            lights: Arc::new(XZRect::new(
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                Arc::new(DiffuseLight::with_color(Color::default())),
-            )),
+            lights: Arc::new(Vec::new()),
             background: sky(),
             lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
@@ -310,6 +307,66 @@ impl Scene {
         Scene {
             world: Arc::new(world),
             lights: light_rect,
+            background: dark(),
+            lookfrom: Point3::new(278., 278., -800.),
+            lookat: Point3::new(278., 278., 0.),
+            vfov: 40.0,
+            aspect_ratio: 1.0,
+            ..Default::default()
+        }
+    }
+
+    pub fn cornell_sphere(_: &mut Random) -> Self {
+        let mut world = HittableList::default();
+
+        let red = Arc::new(Lambertian::with_color(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::with_color(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::with_color(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::with_color(Color::new(15.0, 15.0, 15.0)));
+
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
+        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
+        let light_rect = Arc::new(XZRect::new(213., 343., 227., 332., 554., light));
+        world.add(Arc::new(FlipFace::new(light_rect.clone())));
+        world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
+        world.add(Arc::new(XZRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+        world.add(Arc::new(XYRect::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+
+        let box1 = Arc::new(BoxObj::new(
+            Point3::default(),
+            Point3::new(165., 330., 165.),
+            white,
+        ));
+        let box1 = rotate_y(box1, 15.);
+        let box1 = translate(box1, Vec3::new(265., 0., 295.));
+        world.add(box1);
+
+        let sphere = Arc::new(Sphere::new(
+            Point3::new(190., 90., 190.),
+            90.,
+            Arc::new(Dielectric::new(1.5)),
+        ));
+        world.add(sphere.clone());
+
+        let lights: Arc<Vec<EmittablePtr>> = Arc::new(vec![light_rect, sphere]);
+
+        Scene {
+            world: Arc::new(world),
+            lights,
             background: dark(),
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),

@@ -21,6 +21,10 @@ impl Random {
         let distr = Uniform::new(min, max);
         self.rng.sample(distr)
     }
+    pub fn range_usize(&mut self, min: usize, max: usize) -> usize {
+        let distr = Uniform::new(min, max);
+        self.rng.sample(distr)
+    }
     pub fn shuffle<T>(&mut self, slice: &mut [T]) {
         slice.shuffle(&mut self.rng);
     }

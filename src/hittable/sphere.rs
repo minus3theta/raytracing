@@ -1,4 +1,6 @@
-use crate::{Point3, Random, Vec3};
+use std::f64::consts::PI;
+
+use crate::{Emittable, Onb, Point3, Random, Ray, Vec3};
 
 use super::{Aabb, HitRecord, Hittable, MaterialPtr};
 
@@ -28,6 +30,47 @@ impl Hittable for Sphere {
         let v = Vec3::new(self.radius, self.radius, self.radius);
         Some(Aabb::new(&self.center - &v, &self.center + &v))
     }
+}
+
+impl Emittable for Sphere {
+    fn pdf_value(&self, o: &Point3, v: &Vec3, rng: &mut Random) -> f64 {
+        if self
+            .hit(
+                &Ray::new(o.clone(), v.clone(), 0.0),
+                0.001,
+                f64::INFINITY,
+                rng,
+            )
+            .is_none()
+        {
+            return 0.0;
+        }
+
+        let cos_theta_max =
+            (1.0 - self.radius.powi(2) / (&self.center - o).length_squared()).sqrt();
+        let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
+
+        1.0 / solid_angle
+    }
+
+    fn random(&self, o: &Point3, rng: &mut Random) -> Vec3 {
+        let direction = &self.center - o;
+        let distance_squared = direction.length_squared();
+        let uvw = Onb::new(&direction);
+        uvw.local_vec(&random_to_sphere(self.radius, distance_squared, rng))
+    }
+}
+
+fn random_to_sphere(radius: f64, distance_squared: f64, rng: &mut Random) -> Vec3 {
+    let r1 = rng.unit_f64();
+    let r2 = rng.unit_f64();
+    let z = 1.0 + r2 * ((1.0 - radius.powi(2) / distance_squared).sqrt() - 1.0);
+    let xy = (1.0 - z.powi(2)).sqrt();
+    let phi = 2.0 * PI * r1;
+    let x = phi.cos() * xy;
+    let y = phi.sin() * xy;
+
+    Vec3::new(x, y, z)
 }
 
 #[derive(Clone)]
@@ -128,7 +171,7 @@ fn shpere_hit(
 }
 
 fn get_sphere_uv(p: &Point3) -> (f64, f64) {
-    use std::f64::consts::{PI, TAU};
+    use std::f64::consts::TAU;
     let theta = (-p.y).acos();
     let phi = (-p.z).atan2(p.x) + PI;
 

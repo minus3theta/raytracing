@@ -75,4 +75,18 @@ pub trait Emittable {
     fn random(&self, o: &Point3, rng: &mut Random) -> Vec3;
 }
 
+impl Emittable for Vec<EmittablePtr> {
+    fn pdf_value(&self, o: &Point3, v: &Vec3, rng: &mut Random) -> f64 {
+        self.iter()
+            .map(|object| object.pdf_value(o, v, rng))
+            .sum::<f64>()
+            / self.len() as f64
+    }
+
+    fn random(&self, o: &Point3, rng: &mut Random) -> Vec3 {
+        let choice = rng.range_usize(0, self.len());
+        self[choice].random(o, rng)
+    }
+}
+
 pub type EmittablePtr = Arc<dyn Emittable + Send + Sync>;
