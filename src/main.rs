@@ -4,8 +4,11 @@ use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
 use raytracing::{
-    background::BackgroundPtr, hittable::EmittablePtr, pdf::EmittablePdf, pdf::MixturePdf, Camera,
-    Color, CosinePdf, HittablePtr, Opt, Pdf, Random, Ray, Vec3,
+    background::BackgroundPtr,
+    hittable::EmittablePtr,
+    material::ScatterType,
+    pdf::{EmittablePdf, MixturePdf},
+    Camera, Color, HittablePtr, Opt, Pdf, Random, Ray, Vec3,
 };
 
 const MAX_DEPTH: i32 = 50;
@@ -24,20 +27,26 @@ fn ray_color(
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
-        let emmited = rec.mat_ptr.emmitted(&rec);
+        let emmited = rec.mat_ptr.emmitted(&r, &rec);
 
-        if let Some((attenuation, _scattered, _pdf)) = rec.mat_ptr.scatter(r, &rec, rng) {
-            let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
-            let cosine_pdf = CosinePdf::new(&rec.normal);
-            let mixed_pdf = MixturePdf::new(Arc::new(light_pdf), Arc::new(cosine_pdf));
-            let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
-            let pdf = mixed_pdf.value(&scattered.dir, rng);
+        if let Some(srec) = rec.mat_ptr.scatter(r, &rec, rng) {
+            match srec.scatter {
+                ScatterType::Specular(s_ray) => {
+                    srec.attenuation * ray_color(&s_ray, world, lights, background, depth - 1, rng)
+                }
+                ScatterType::Pdf(s_pdf) => {
+                    let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
+                    let mixed_pdf = MixturePdf::new(Arc::new(light_pdf), s_pdf);
+                    let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
+                    let pdf = mixed_pdf.value(&scattered.dir, rng);
 
-            emmited
-                + attenuation
-                    * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
-                    * ray_color(&scattered, world, lights, background, depth - 1, rng)
-                    / pdf
+                    emmited
+                        + srec.attenuation
+                            * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
+                            * ray_color(&scattered, world, lights, background, depth - 1, rng)
+                            / pdf
+                }
+            }
         } else {
             emmited
         }

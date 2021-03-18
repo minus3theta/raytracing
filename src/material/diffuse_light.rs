@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use super::Material;
 
-use crate::texture::SolidColor;
-use crate::{Color, HitRecord, TexturePtr};
+use crate::{texture::SolidColor, Color, HitRecord, Ray, TexturePtr};
 
 #[derive(Clone)]
 pub struct DiffuseLight {
@@ -21,7 +20,7 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn emmitted(&self, rec: &HitRecord) -> Color {
+    fn emmitted(&self, _: &Ray, rec: &HitRecord) -> Color {
         if rec.front_face {
             self.emit.value(rec.u, rec.v, &rec.p)
         } else {

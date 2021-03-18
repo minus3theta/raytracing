@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
-use crate::texture::SolidColor;
-use crate::{Color, HitRecord, Material, Onb, Random, Ray, TexturePtr, Vec3};
+use crate::{texture::SolidColor, CosinePdf};
+use crate::{Color, HitRecord, Material, Random, Ray, TexturePtr};
+
+use super::ScatterRecord;
 
 #[derive(Clone)]
 pub struct Lambertian {
@@ -18,15 +20,10 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray, f64)> {
-        let uvw = Onb::new(&rec.normal);
-        let direction = uvw.local_vec(&Vec3::random_cosine_direction(rng));
-        let pdf = uvw.w.dot(&direction) / std::f64::consts::PI;
-
-        Some((
+    fn scatter(&self, _: &Ray, rec: &HitRecord, _: &mut Random) -> Option<ScatterRecord> {
+        Some(ScatterRecord::new_scatter(
             self.albedo.value(rec.u, rec.v, &rec.p),
-            Ray::new(rec.p.clone(), direction, r_in.time),
-            pdf,
+            Arc::new(CosinePdf::new(&rec.normal)),
         ))
     }
 
