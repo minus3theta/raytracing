@@ -13,7 +13,7 @@ pub struct Opt {
     #[structopt(short = "s", long = "samples", default_value = "64")]
     pub samples_per_pixel: usize,
 
-    /// Scenes (random, twospheres, twoperlinspheres, earth, simplelight, cornellbox, cornellsmoke, finalscene, triangle, teapot)
+    /// Scenes (random, twospheres, twoperlinspheres, earth, simplelight, cornellbox, cornellmetal, cornellsphere, cornellsmoke, finalscene, triangle, teapot)
     #[structopt(default_value = "random")]
     pub scene: SceneSelector,
 }
@@ -48,10 +48,9 @@ impl SceneSelector {
             SceneSelector::CornellMetal => Scene::cornell_metal(rng),
             SceneSelector::CornellSphere => Scene::cornell_sphere(rng),
             SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
-            // SceneSelector::FinalScene => Scene::final_scene(rng),
-            // SceneSelector::Triangle => Scene::triangle(rng),
-            // SceneSelector::Teapot => Scene::teapot(rng),
-            _ => todo!(),
+            SceneSelector::FinalScene => Scene::final_scene(rng),
+            SceneSelector::Triangle => Scene::triangle(rng),
+            SceneSelector::Teapot => Scene::teapot(rng),
         }
     }
 }
