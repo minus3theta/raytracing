@@ -73,6 +73,9 @@ pub type HittablePtr = Arc<dyn Hittable + Send + Sync>;
 pub trait Emittable {
     fn pdf_value(&self, o: &Point3, v: &Vec3, rng: &mut Random) -> f64;
     fn random(&self, o: &Point3, rng: &mut Random) -> Vec3;
+    fn is_valid(&self) -> bool {
+        true
+    }
 }
 
 impl Emittable for Vec<EmittablePtr> {
@@ -86,6 +89,10 @@ impl Emittable for Vec<EmittablePtr> {
     fn random(&self, o: &Point3, rng: &mut Random) -> Vec3 {
         let choice = rng.range_usize(0, self.len());
         self[choice].random(o, rng)
+    }
+
+    fn is_valid(&self) -> bool {
+        !self.is_empty()
     }
 }
 

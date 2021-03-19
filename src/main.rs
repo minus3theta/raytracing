@@ -1,14 +1,9 @@
-use std::sync::Arc;
-
 use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
 use raytracing::{
-    background::BackgroundPtr,
-    hittable::EmittablePtr,
-    material::ScatterType,
-    pdf::{EmittablePdf, MixturePdf},
-    Camera, Color, HittablePtr, Opt, Pdf, Random, Ray, Vec3,
+    background::BackgroundPtr, hittable::EmittablePtr, material::ScatterType, pdf::EmittablePdf,
+    Camera, Color, HittablePtr, Opt, Random, Ray, Vec3,
 };
 
 const MAX_DEPTH: i32 = 50;
@@ -36,7 +31,7 @@ fn ray_color(
                 }
                 ScatterType::Pdf(s_pdf) => {
                     let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
-                    let mixed_pdf = MixturePdf::new(Arc::new(light_pdf), s_pdf);
+                    let mixed_pdf = light_pdf.mix(s_pdf, 0.3);
                     let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
                     let pdf = mixed_pdf.value(&scattered.dir, rng);
 

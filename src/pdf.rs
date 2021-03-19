@@ -45,6 +45,14 @@ impl EmittablePdf {
     pub fn new(obj: EmittablePtr, o: Point3) -> Self {
         Self { obj, o }
     }
+
+    pub fn mix(self, other: PdfPtr, ratio: f64) -> PdfPtr {
+        if self.obj.is_valid() {
+            Arc::new(MixturePdf::new(Arc::new(self), other, ratio))
+        } else {
+            other
+        }
+    }
 }
 
 impl Pdf for EmittablePdf {
@@ -61,21 +69,23 @@ impl Pdf for EmittablePdf {
 pub struct MixturePdf {
     pub p0: PdfPtr,
     pub p1: PdfPtr,
+    ratio: f64,
 }
 
 impl MixturePdf {
-    pub fn new(p0: PdfPtr, p1: PdfPtr) -> Self {
-        Self { p0, p1 }
+    pub fn new(p0: PdfPtr, p1: PdfPtr, ratio: f64) -> Self {
+        Self { p0, p1, ratio }
     }
 }
 
 impl Pdf for MixturePdf {
     fn value(&self, direction: &Vec3, rng: &mut Random) -> f64 {
-        0.5 * self.p0.value(direction, rng) + 0.5 * self.p1.value(direction, rng)
+        self.ratio * self.p0.value(direction, rng)
+            + (1.0 - self.ratio) * self.p1.value(direction, rng)
     }
 
     fn generate(&self, rng: &mut Random) -> Vec3 {
-        if rng.unit_f64() < 0.5 {
+        if rng.unit_f64() < self.ratio {
             self.p0.generate(rng)
         } else {
             self.p1.generate(rng)
