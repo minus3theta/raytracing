@@ -92,3 +92,22 @@ impl Pdf for MixturePdf {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct UniformSpherePdf {}
+
+impl UniformSpherePdf {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Pdf for UniformSpherePdf {
+    fn value(&self, _: &Vec3, _: &mut Random) -> f64 {
+        1.0 / (4.0 * PI)
+    }
+
+    fn generate(&self, rng: &mut Random) -> Vec3 {
+        Vec3::random_in_unit_sphere(rng)
+    }
+}

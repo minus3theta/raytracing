@@ -39,15 +39,15 @@ arg_enum! {
 impl SceneSelector {
     pub fn generate_scene(&self, rng: &mut Random) -> Scene {
         match self {
-            // SceneSelector::Random => Scene::random_scene(rng),
-            // SceneSelector::TwoSpheres => Scene::two_spheres(rng),
-            // SceneSelector::TwoPerlinSpheres => Scene::two_perlin_spheres(rng),
-            // SceneSelector::Earth => Scene::earth(rng),
-            // SceneSelector::SimpleLight => Scene::simple_light(rng),
+            SceneSelector::Random => Scene::random_scene(rng),
+            SceneSelector::TwoSpheres => Scene::two_spheres(rng),
+            SceneSelector::TwoPerlinSpheres => Scene::two_perlin_spheres(rng),
+            SceneSelector::Earth => Scene::earth(rng),
+            SceneSelector::SimpleLight => Scene::simple_light(rng),
             SceneSelector::CornellBox => Scene::cornell_box(rng),
             SceneSelector::CornellMetal => Scene::cornell_metal(rng),
             SceneSelector::CornellSphere => Scene::cornell_sphere(rng),
-            // SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
+            SceneSelector::CornellSmoke => Scene::cornell_smoke(rng),
             // SceneSelector::FinalScene => Scene::final_scene(rng),
             // SceneSelector::Triangle => Scene::triangle(rng),
             // SceneSelector::Teapot => Scene::teapot(rng),

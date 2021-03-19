@@ -1,4 +1,8 @@
-use crate::{Color, HitRecord, Material, Random, Ray, TexturePtr, Vec3};
+use std::{f64::consts::PI, sync::Arc};
+
+use crate::{pdf::UniformSpherePdf, HitRecord, Material, Random, Ray, TexturePtr};
+
+use super::ScatterRecord;
 
 #[derive(Clone)]
 pub struct Isotropic {
@@ -14,10 +18,14 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut Random) -> Option<(Color, Ray)> {
-        Some((
+    fn scatter(&self, _: &Ray, rec: &HitRecord, _: &mut Random) -> Option<ScatterRecord> {
+        Some(ScatterRecord::new_scatter(
             self.albedo.value(rec.u, rec.v, &rec.p),
-            Ray::new(rec.p.clone(), Vec3::random_in_unit_sphere(rng), r_in.time),
+            Arc::new(UniformSpherePdf::new()),
         ))
+    }
+
+    fn scattering_pdf(&self, _: &Ray, _: &HitRecord, _: &Ray) -> f64 {
+        1.0 / (4.0 * PI)
     }
 }

@@ -31,7 +31,7 @@ fn ray_color(
                 }
                 ScatterType::Pdf(s_pdf) => {
                     let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
-                    let mixed_pdf = light_pdf.mix(s_pdf, 0.3);
+                    let mixed_pdf = light_pdf.mix(s_pdf, 0.0);
                     let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
                     let pdf = mixed_pdf.value(&scattered.dir, rng);
 
