@@ -2,8 +2,8 @@ use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
 use raytracing::{
-    background::BackgroundPtr, hittable::EmittablePtr, material::ScatterType, pdf::EmittablePdf,
-    Camera, Color, HittablePtr, Opt, Random, Ray, Vec3,
+    background::BackgroundPtr, hittable::EmittablePtr, pdf::EmittablePdf, Camera, Color,
+    HittablePtr, Material, Opt, Random, Ray, Vec3,
 };
 
 const MAX_DEPTH: i32 = 50;
@@ -22,28 +22,31 @@ fn ray_color(
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY, rng) {
-        let emmited = rec.mat_ptr.emmitted(&r, &rec);
-
-        if let Some(srec) = rec.mat_ptr.scatter(r, &rec, rng) {
-            match srec.scatter {
-                ScatterType::Specular(s_ray) => {
-                    srec.attenuation * ray_color(&s_ray, world, lights, background, depth - 1, rng)
-                }
-                ScatterType::Pdf(s_pdf) => {
+        match rec.mat_ptr.as_ref() {
+            Material::Emit(m) => m.emmitted(r, &rec),
+            Material::Scatter(m) => {
+                if let Some(srec) = m.scatter(r, &rec) {
                     let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
-                    let mixed_pdf = light_pdf.mix(s_pdf, 0.5);
+                    let mixed_pdf = light_pdf.mix(srec.pdf, 0.5);
                     let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
                     let pdf = mixed_pdf.value(&scattered.dir, rng);
 
-                    emmited
-                        + srec.attenuation
-                            * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)
-                            * ray_color(&scattered, world, lights, background, depth - 1, rng)
-                            / pdf
+                    srec.attenuation
+                        * m.scattering_pdf(r, &rec, &scattered)
+                        * ray_color(&scattered, world, lights, background, depth - 1, rng)
+                        / pdf
+                } else {
+                    Color::default()
                 }
             }
-        } else {
-            emmited
+            Material::Specular(m) => {
+                if let Some(srec) = m.scatter(r, &rec, rng) {
+                    srec.attenuation
+                        * ray_color(&srec.ray, world, lights, background, depth - 1, rng)
+                } else {
+                    Color::default()
+                }
+            }
         }
     } else {
         background.value(r)

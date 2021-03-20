@@ -20,7 +20,7 @@ pub use color::Color;
 pub use hittable::{Emittable, HitRecord, Hittable, HittablePtr};
 pub use material::{Material, MaterialPtr};
 pub use opt::Opt;
-pub use pdf::{CosinePdf, Pdf};
+pub use pdf::Pdf;
 pub use random::Random;
 pub use ray::Ray;
 pub use texture::{Texture, TexturePtr};

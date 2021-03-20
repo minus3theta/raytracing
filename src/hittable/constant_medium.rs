@@ -1,8 +1,5 @@
-use std::sync::Arc;
-
 use super::{Aabb, HitRecord, Hittable, HittablePtr};
-use crate::material::Isotropic;
-use crate::{MaterialPtr, Random, Ray, TexturePtr, Vec3};
+use crate::{Material, MaterialPtr, Random, Ray, TexturePtr, Vec3};
 
 #[derive(Clone)]
 pub struct ConstantMedium {
@@ -15,7 +12,7 @@ impl ConstantMedium {
     pub fn new(boundary: HittablePtr, density: f64, texture: impl Into<TexturePtr>) -> Self {
         Self {
             boundary,
-            phase_function: Arc::new(Isotropic::new(texture.into())),
+            phase_function: Material::isotropic(texture),
             neg_inv_density: (-1.0 / density),
         }
     }
