@@ -1,6 +1,6 @@
-use std::{f64::consts::PI, sync::Arc};
+use std::f64::consts::PI;
 
-use crate::{emittable::EmittableEnum, Emittable, EmittablePtr, Onb, Point3, Random, Vec3};
+use crate::{emittable::EmittableEnum, Emittable, Onb, Point3, Random, Vec3};
 
 #[derive(Clone)]
 pub enum PdfEnum<'a> {
@@ -34,8 +34,6 @@ pub trait Pdf {
     fn value(&self, direction: &Vec3, rng: &mut Random) -> f64;
     fn generate(&self, rng: &mut Random) -> Vec3;
 }
-
-pub type PdfPtr = Arc<dyn Pdf + Send + Sync>;
 
 #[derive(Clone)]
 pub struct CosinePdf {

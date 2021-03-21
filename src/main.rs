@@ -2,8 +2,9 @@ use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
 use raytracing::{
-    background::BackgroundPtr, emittable::EmittableEnum, hittable::HittableEnum, pdf::EmittablePdf,
-    Camera, Color, EmittablePtr, Hittable, HittablePtr, Material, Opt, Pdf, Random, Ray, Vec3,
+    background::Background, background::BackgroundEnum, emittable::EmittableEnum,
+    hittable::HittableEnum, pdf::EmittablePdf, Camera, Color, Hittable, Material, Opt, Pdf, Random,
+    Ray, Vec3,
 };
 
 const MAX_DEPTH: i32 = 50;
@@ -13,7 +14,7 @@ fn ray_color(
     r: &Ray,
     world: &HittableEnum,
     lights: &EmittableEnum,
-    background: &BackgroundPtr,
+    background: &BackgroundEnum,
     depth: i32,
     rng: &mut Random,
 ) -> Color {
@@ -59,7 +60,7 @@ fn render(
     camera: &Camera,
     world: &HittableEnum,
     lights: &EmittableEnum,
-    background: &BackgroundPtr,
+    background: &BackgroundEnum,
     height: usize,
     width: usize,
     samples_per_pixel: usize,
@@ -95,7 +96,7 @@ fn render_recursive(
     camera: &Camera,
     world: &HittableEnum,
     lights: &EmittableEnum,
-    background: &BackgroundPtr,
+    background: &BackgroundEnum,
     height: usize,
     width: usize,
     samples_per_pixel: usize,

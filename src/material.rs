@@ -2,7 +2,7 @@ use std::{f64::consts::PI, sync::Arc};
 
 use crate::{
     pdf::PdfEnum,
-    pdf::{CosinePdf, PdfPtr, UniformSpherePdf},
+    pdf::{CosinePdf, UniformSpherePdf},
     Color, HitRecord, Random, Ray, TexturePtr, Vec3,
 };
 

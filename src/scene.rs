@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use crate::{
-    background::{dark, sky, BackgroundPtr},
+    background::BackgroundEnum,
+    background::{dark, sky},
     emittable::EmittableEnum,
     hittable::ConstantMedium,
     hittable::HittableEnum,
@@ -16,7 +17,7 @@ use crate::{
 pub struct Scene {
     pub world: HittableEnum,
     pub lights: EmittableEnum,
-    pub background: BackgroundPtr,
+    pub background: BackgroundEnum,
     pub lookfrom: Point3,
     pub lookat: Point3,
     pub vfov: f64,
