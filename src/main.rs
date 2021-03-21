@@ -2,8 +2,8 @@ use indicatif::{ProgressBar, ProgressIterator};
 use structopt::StructOpt;
 
 use raytracing::{
-    background::BackgroundPtr, hittable::EmittablePtr, pdf::EmittablePdf, Camera, Color,
-    HittablePtr, Material, Opt, Random, Ray, Vec3,
+    background::BackgroundPtr, emittable::EmittableEnum, hittable::HittableEnum, pdf::EmittablePdf,
+    Camera, Color, EmittablePtr, Hittable, HittablePtr, Material, Opt, Pdf, Random, Ray, Vec3,
 };
 
 const MAX_DEPTH: i32 = 50;
@@ -11,8 +11,8 @@ const RECURSION_DEPTH: i32 = 3;
 
 fn ray_color(
     r: &Ray,
-    world: &HittablePtr,
-    lights: &EmittablePtr,
+    world: &HittableEnum,
+    lights: &EmittableEnum,
     background: &BackgroundPtr,
     depth: i32,
     rng: &mut Random,
@@ -26,8 +26,8 @@ fn ray_color(
             Material::Emit(m) => m.emmitted(r, &rec),
             Material::Scatter(m) => {
                 if let Some(srec) = m.scatter(r, &rec) {
-                    let light_pdf = EmittablePdf::new(lights.clone(), rec.p.clone());
-                    let mixed_pdf = light_pdf.mix(srec.pdf, 0.5);
+                    let light_pdf = EmittablePdf::new(lights, rec.p.clone());
+                    let mixed_pdf = light_pdf.mix(&srec.pdf, 0.5);
                     let scattered = Ray::new(rec.p.clone(), mixed_pdf.generate(rng), r.time);
                     let pdf = mixed_pdf.value(&scattered.dir, rng);
 
@@ -57,8 +57,8 @@ type Picture = Vec<Vec<Color>>;
 
 fn render(
     camera: &Camera,
-    world: &HittablePtr,
-    lights: &EmittablePtr,
+    world: &HittableEnum,
+    lights: &EmittableEnum,
     background: &BackgroundPtr,
     height: usize,
     width: usize,
@@ -93,8 +93,8 @@ fn render(
 
 fn render_recursive(
     camera: &Camera,
-    world: &HittablePtr,
-    lights: &EmittablePtr,
+    world: &HittableEnum,
+    lights: &EmittableEnum,
     background: &BackgroundPtr,
     height: usize,
     width: usize,

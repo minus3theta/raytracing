@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::{Point3, Random, Ray, Vec3};
 
 use super::{Aabb, HitRecord, Hittable, HittablePtr};
@@ -105,14 +103,6 @@ impl Hittable for RotateY {
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         self.bbox.clone()
     }
-}
-
-pub fn translate(obj: HittablePtr, offset: Vec3) -> HittablePtr {
-    Arc::new(Translate::new(obj, offset))
-}
-
-pub fn rotate_y(obj: HittablePtr, theta: f64) -> HittablePtr {
-    Arc::new(RotateY::new(obj, theta))
 }
 
 #[derive(Clone)]

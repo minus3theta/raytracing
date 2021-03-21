@@ -1,6 +1,7 @@
 use std::{f64::consts::PI, sync::Arc};
 
 use crate::{
+    pdf::PdfEnum,
     pdf::{CosinePdf, PdfPtr, UniformSpherePdf},
     Color, HitRecord, Random, Ray, TexturePtr, Vec3,
 };
@@ -27,11 +28,11 @@ impl EmitMaterial {
 #[derive(Clone)]
 pub struct PdfScatterRecord {
     pub attenuation: Color,
-    pub pdf: PdfPtr,
+    pub pdf: PdfEnum<'static>,
 }
 
 impl PdfScatterRecord {
-    pub fn new(attenuation: Color, pdf: PdfPtr) -> Self {
+    pub fn new(attenuation: Color, pdf: PdfEnum<'static>) -> Self {
         Self { attenuation, pdf }
     }
 }
@@ -47,11 +48,11 @@ impl ScatterMaterial {
         match self {
             ScatterMaterial::Lambertian { albedo } => Some(PdfScatterRecord::new(
                 albedo.value(rec.u, rec.v, &rec.p),
-                Arc::new(CosinePdf::new(&rec.normal)),
+                PdfEnum::Cosine(CosinePdf::new(&rec.normal)),
             )),
             ScatterMaterial::Isotropic { albedo } => Some(PdfScatterRecord::new(
                 albedo.value(rec.u, rec.v, &rec.p),
-                Arc::new(UniformSpherePdf::new()),
+                PdfEnum::UniformSphere(UniformSpherePdf::new()),
             )),
         }
     }

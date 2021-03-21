@@ -5,6 +5,7 @@ pub mod algebra;
 pub mod background;
 pub mod camera;
 pub mod color;
+pub mod emittable;
 pub mod hittable;
 pub mod material;
 pub mod opt;
@@ -17,7 +18,8 @@ pub mod vec3;
 
 pub use camera::Camera;
 pub use color::Color;
-pub use hittable::{Emittable, HitRecord, Hittable, HittablePtr};
+pub use emittable::{Emittable, EmittablePtr};
+pub use hittable::{HitRecord, Hittable, HittablePtr};
 pub use material::{Material, MaterialPtr};
 pub use opt::Opt;
 pub use pdf::Pdf;

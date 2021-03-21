@@ -1,9 +1,9 @@
-use std::{path::Path, sync::Arc};
+use std::path::Path;
 
 use anyhow::Context;
 use ordered_float::OrderedFloat;
 
-use super::{Aabb, Hittable, HittablePtr, Triangle};
+use super::{Aabb, Hittable, HittableEnum, HittablePtr};
 use crate::{HitRecord, MaterialPtr, Random, Vec3};
 
 #[derive(Clone)]
@@ -76,9 +76,8 @@ impl BvhNode {
             let p0 = it.next().unwrap();
             let p1 = it.next().unwrap();
             let p2 = it.next().unwrap();
-            let triangle = Triangle::new(p0, p1, p2, material.clone());
 
-            polygons.push(Arc::new(triangle));
+            polygons.push(HittableEnum::triangle(p0, p1, p2, material.clone()));
         }
 
         Ok(Self::new(&mut polygons, time0, time1, rng).context("No bounding box")?)

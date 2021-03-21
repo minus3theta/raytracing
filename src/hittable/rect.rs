@@ -1,6 +1,6 @@
-use crate::{MaterialPtr, Point3, Random, Ray, Vec3};
+use crate::{emittable::EmittableEnum, Emittable, MaterialPtr, Point3, Random, Ray, Vec3};
 
-use super::{Aabb, Emittable, HitRecord, Hittable};
+use super::{Aabb, HitRecord, Hittable, HittableEnum};
 
 const EPS: f64 = 0.0001;
 
@@ -137,6 +137,18 @@ impl Emittable for XZRect {
             rng.range_f64(self.z0, self.z1),
         );
         random_point - o
+    }
+}
+
+impl Into<HittableEnum> for XZRect {
+    fn into(self) -> HittableEnum {
+        HittableEnum::XZRect(self)
+    }
+}
+
+impl Into<EmittableEnum> for XZRect {
+    fn into(self) -> EmittableEnum {
+        EmittableEnum::XZRect(self)
     }
 }
 

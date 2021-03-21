@@ -1,6 +1,6 @@
 use crate::Random;
 
-use super::{Aabb, HitRecord, Hittable, HittablePtr};
+use super::{Aabb, HitRecord, Hittable, HittableEnum, HittablePtr};
 
 #[derive(Clone, Default)]
 pub struct HittableList {
@@ -8,6 +8,9 @@ pub struct HittableList {
 }
 
 impl HittableList {
+    pub fn new() -> Self {
+        Default::default()
+    }
     pub fn clear(&mut self) {
         self.objects.clear();
     }
@@ -36,5 +39,11 @@ impl Hittable for HittableList {
             bb = temp_box.merge(&bb);
         }
         bb
+    }
+}
+
+impl Into<HittableEnum> for HittableList {
+    fn into(self) -> HittableEnum {
+        HittableEnum::HittableList(self)
     }
 }

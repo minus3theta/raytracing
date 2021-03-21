@@ -1,8 +1,8 @@
 use std::f64::consts::PI;
 
-use crate::{Emittable, Onb, Point3, Random, Ray, Vec3};
+use crate::{emittable::EmittableEnum, Emittable, Onb, Point3, Random, Ray, Vec3};
 
-use super::{Aabb, HitRecord, Hittable, MaterialPtr};
+use super::{Aabb, HitRecord, Hittable, HittableEnum, MaterialPtr};
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -58,6 +58,18 @@ impl Emittable for Sphere {
         let distance_squared = direction.length_squared();
         let uvw = Onb::new(&direction);
         uvw.local_vec(&random_to_sphere(self.radius, distance_squared, rng))
+    }
+}
+
+impl Into<HittableEnum> for Sphere {
+    fn into(self) -> HittableEnum {
+        HittableEnum::Sphere(self)
+    }
+}
+
+impl Into<EmittableEnum> for Sphere {
+    fn into(self) -> EmittableEnum {
+        EmittableEnum::Sphere(self)
     }
 }
 

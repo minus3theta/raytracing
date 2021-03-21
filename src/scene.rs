@@ -2,19 +2,20 @@ use std::sync::Arc;
 
 use crate::{
     background::{dark, sky, BackgroundPtr},
+    emittable::EmittableEnum,
     hittable::ConstantMedium,
+    hittable::HittableEnum,
     hittable::Triangle,
     hittable::{
-        rotate_y, translate, BoxObj, BvhNode, EmittablePtr, FlipFace, HittableList, MovingSphere,
-        Sphere, XYRect, XZRect, YZRect,
+        BoxObj, BvhNode, FlipFace, HittableList, MovingSphere, Sphere, XYRect, XZRect, YZRect,
     },
     texture::{Checker, ImageTexture, Marble},
-    Color, HittablePtr, Material, Point3, Random, TexturePtr, Vec3,
+    Color, EmittablePtr, HittablePtr, Material, Point3, Random, TexturePtr, Vec3,
 };
 
 pub struct Scene {
-    pub world: HittablePtr,
-    pub lights: EmittablePtr,
+    pub world: HittableEnum,
+    pub lights: EmittableEnum,
     pub background: BackgroundPtr,
     pub lookfrom: Point3,
     pub lookat: Point3,
@@ -26,8 +27,8 @@ pub struct Scene {
 impl Default for Scene {
     fn default() -> Self {
         Self {
-            world: Arc::new(HittableList::default()),
-            lights: Arc::new(Vec::new()),
+            world: Default::default(),
+            lights: Default::default(),
             background: sky(),
             lookfrom: Point3::new(13.0, 2.0, 3.0),
             lookat: Point3::default(),
@@ -47,11 +48,11 @@ impl Scene {
             Color::new(0.9, 0.9, 0.9),
         ));
         let ground_material = Material::lambertian(checker);
-        world.add(Arc::new(Sphere::new(
+        world.add(HittableEnum::sphere(
             Point3::new(0.0, -1000.0, 0.0),
             1000.0,
             ground_material,
-        )));
+        ));
 
         let mut objects: Vec<HittablePtr> = Vec::new();
 
@@ -71,40 +72,40 @@ impl Scene {
                     let albedo = Color::random(rng) * Color::random(rng);
                     let mat = Material::lambertian(albedo);
                     let center2 = &center + Vec3::new(0.0, rng.range_f64(0.0, 0.5), 0.0);
-                    objects.push(Arc::new(MovingSphere::new(
+                    objects.push(HittableEnum::moving_sphere(
                         center, center2, 0.0, 1.0, 0.2, mat,
-                    )));
+                    ));
                 } else if choose_mat < 0.95 {
                     let albedo = Color::random(rng);
                     let fuzz = rng.range_f64(0.0, 0.5);
                     let mat = Material::metal(albedo, fuzz);
-                    objects.push(Arc::new(Sphere::new(center, 0.2, mat)));
+                    objects.push(HittableEnum::sphere(center, 0.2, mat));
                 } else {
-                    objects.push(Arc::new(Sphere::new(center, 0.2, glass_material.clone())));
+                    objects.push(HittableEnum::sphere(center, 0.2, glass_material.clone()));
                 }
             }
         }
         let bvh = BvhNode::new(&mut objects, 0.0, 1.0, rng).unwrap();
-        world.add(Arc::new(bvh));
+        world.add(HittableEnum::bvh_node(bvh));
 
-        world.add(Arc::new(Sphere::new(
+        world.add(HittableEnum::sphere(
             Point3::new(0.0, 1.0, 0.0),
             1.0,
             Material::dielectric(1.5),
-        )));
-        world.add(Arc::new(Sphere::new(
+        ));
+        world.add(HittableEnum::sphere(
             Point3::new(-4.0, 1.0, 0.0),
             1.0,
             Material::lambertian(Color::new(0.4, 0.2, 0.1)),
-        )));
-        world.add(Arc::new(Sphere::new(
+        ));
+        world.add(HittableEnum::sphere(
             Point3::new(4.0, 1.0, 0.0),
             1.0,
             Material::metal(Color::new(0.7, 0.6, 0.5), 0.0),
-        )));
+        ));
 
         Scene {
-            world: Arc::new(world),
+            world: world.into(),
             aperture: 0.1,
             ..Default::default()
         }
@@ -118,19 +119,15 @@ impl Scene {
             Color::new(0.9, 0.9, 0.9),
         ));
         let mat = Material::lambertian(checker);
-        world.add(Arc::new(Sphere::new(
+        world.add(HittableEnum::sphere(
             Point3::new(0.0, -10.0, 0.0),
             10.0,
             mat.clone(),
-        )));
-        world.add(Arc::new(Sphere::new(
-            Point3::new(0.0, 10.0, 0.0),
-            10.0,
-            mat,
-        )));
+        ));
+        world.add(HittableEnum::sphere(Point3::new(0.0, 10.0, 0.0), 10.0, mat));
 
         Scene {
-            world: Arc::new(world),
+            world: world.into(),
             ..Default::default()
         }
     }
@@ -326,49 +323,41 @@ impl Scene {
         let green = Material::lambertian(Color::new(0.12, 0.45, 0.15));
         let light = Material::diffuse_light(Color::new(15.0, 15.0, 15.0));
 
-        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 555., green)));
-        world.add(Arc::new(YZRect::new(0., 555., 0., 555., 0., red)));
-        let light_rect = Arc::new(XZRect::new(213., 343., 227., 332., 554., light));
-        world.add(Arc::new(FlipFace::new(light_rect.clone())));
-        world.add(Arc::new(XZRect::new(0., 555., 0., 555., 0., white.clone())));
-        world.add(Arc::new(XZRect::new(
+        world.add(HittableEnum::yz_rect(0., 555., 0., 555., 555., green));
+        world.add(HittableEnum::yz_rect(0., 555., 0., 555., 0., red));
+        let light_rect = XZRect::new(213., 343., 227., 332., 554., light);
+        world.add(HittableEnum::flip_face(Arc::new(light_rect.clone().into())));
+        world.add(HittableEnum::xz_rect(0., 555., 0., 555., 0., white.clone()));
+        world.add(HittableEnum::xz_rect(
             0.,
             555.,
             0.,
             555.,
             555.,
             white.clone(),
-        )));
-        world.add(Arc::new(XYRect::new(
-            0.,
-            555.,
-            0.,
-            555.,
-            555.,
-            white.clone(),
-        )));
-
-        let box1 = Arc::new(BoxObj::new(
-            Point3::default(),
-            Point3::new(165., 330., 165.),
-            white,
         ));
-        let box1 = rotate_y(box1, 15.);
-        let box1 = translate(box1, Vec3::new(265., 0., 295.));
+        world.add(HittableEnum::xy_rect(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        ));
+
+        let box1 = HittableEnum::box_obj(Point3::default(), Point3::new(165., 330., 165.), white);
+        let box1 = HittableEnum::rotate_y(box1, 15.);
+        let box1 = HittableEnum::translate(box1, Vec3::new(265., 0., 295.));
         world.add(box1);
 
-        let sphere = Arc::new(Sphere::new(
-            Point3::new(190., 90., 190.),
-            90.,
-            Material::dielectric(1.5),
-        ));
-        world.add(sphere.clone());
+        let sphere = Sphere::new(Point3::new(190., 90., 190.), 90., Material::dielectric(1.5));
+        world.add(Arc::new(sphere.clone().into()));
 
-        let lights: Arc<Vec<EmittablePtr>> = Arc::new(vec![light_rect, sphere]);
+        let lights: Vec<EmittableEnum> = vec![light_rect.into(), sphere.into()];
 
         Scene {
-            world: Arc::new(world),
-            lights,
+            world: world.into(),
+            lights: lights.into(),
             background: dark(),
             lookfrom: Point3::new(278., 278., -800.),
             lookat: Point3::new(278., 278., 0.),

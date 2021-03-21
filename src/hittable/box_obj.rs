@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use crate::{MaterialPtr, Point3, Random, Ray};
 
-use super::{Aabb, HitRecord, Hittable, HittableList, XYRect, XZRect, YZRect};
+use super::{Aabb, HitRecord, Hittable, HittableEnum, HittableList};
 
 #[derive(Clone)]
 pub struct BoxObj {
@@ -15,49 +13,49 @@ impl BoxObj {
     pub fn new(p0: Point3, p1: Point3, mat: MaterialPtr) -> Self {
         let mut sides = HittableList::default();
 
-        sides.add(Arc::new(XYRect::new(
+        sides.add(HittableEnum::xy_rect(
             p0.x,
             p1.x,
             p0.y,
             p1.y,
             p1.z,
             mat.clone(),
-        )));
-        sides.add(Arc::new(XYRect::new(
+        ));
+        sides.add(HittableEnum::xy_rect(
             p0.x,
             p1.x,
             p0.y,
             p1.y,
             p0.z,
             mat.clone(),
-        )));
+        ));
 
-        sides.add(Arc::new(XZRect::new(
+        sides.add(HittableEnum::xz_rect(
             p0.x,
             p1.x,
             p0.z,
             p1.z,
             p1.y,
             mat.clone(),
-        )));
-        sides.add(Arc::new(XZRect::new(
+        ));
+        sides.add(HittableEnum::xz_rect(
             p0.x,
             p1.x,
             p0.z,
             p1.z,
             p0.y,
             mat.clone(),
-        )));
+        ));
 
-        sides.add(Arc::new(YZRect::new(
+        sides.add(HittableEnum::yz_rect(
             p0.y,
             p1.y,
             p0.z,
             p1.z,
             p1.x,
             mat.clone(),
-        )));
-        sides.add(Arc::new(YZRect::new(p0.y, p1.y, p0.z, p1.z, p0.x, mat)));
+        ));
+        sides.add(HittableEnum::yz_rect(p0.y, p1.y, p0.z, p1.z, p0.x, mat));
 
         Self {
             box_min: p0,
