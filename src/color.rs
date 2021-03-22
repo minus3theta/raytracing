@@ -1,6 +1,6 @@
-use std::{ops, sync::Arc};
+use std::ops;
 
-use crate::texture::SolidColor;
+use crate::texture::TextureEnum;
 use crate::{Random, TexturePtr, Vec3};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
@@ -46,6 +46,6 @@ impl_op_ex!(/=|c: &mut Color, t: f64| { c.0 /= t });
 
 impl Into<TexturePtr> for Color {
     fn into(self) -> TexturePtr {
-        Arc::new(SolidColor::new(self))
+        TextureEnum::solid_color(self)
     }
 }

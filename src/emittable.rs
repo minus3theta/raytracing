@@ -28,6 +28,14 @@ impl Emittable for EmittableEnum {
             EmittableEnum::List(e) => e.random(o, rng),
         }
     }
+
+    fn is_valid(&self) -> bool {
+        match self {
+            EmittableEnum::XZRect(e) => e.is_valid(),
+            EmittableEnum::Sphere(e) => e.is_valid(),
+            EmittableEnum::List(e) => e.is_valid(),
+        }
+    }
 }
 
 impl Default for EmittableEnum {

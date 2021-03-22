@@ -1,5 +1,5 @@
-use super::Texture;
-use crate::{Color, Point3};
+use super::{Texture, TextureEnum};
+use crate::{Color, Point3, TexturePtr};
 
 #[derive(Debug, Clone, Default)]
 pub struct SolidColor {
@@ -24,5 +24,17 @@ impl Texture for SolidColor {
 impl From<Color> for SolidColor {
     fn from(color_value: Color) -> Self {
         Self::new(color_value)
+    }
+}
+
+impl Into<TextureEnum> for SolidColor {
+    fn into(self) -> TextureEnum {
+        TextureEnum::SolidColor(self)
+    }
+}
+
+impl Into<TexturePtr> for SolidColor {
+    fn into(self) -> TexturePtr {
+        Into::<TextureEnum>::into(self).into()
     }
 }

@@ -107,3 +107,15 @@ impl Hittable for BvhNode {
         }
     }
 }
+
+impl Into<HittableEnum> for BvhNode {
+    fn into(self) -> HittableEnum {
+        HittableEnum::BvhNode(self)
+    }
+}
+
+impl Into<HittablePtr> for BvhNode {
+    fn into(self) -> HittablePtr {
+        Into::<HittableEnum>::into(self).into()
+    }
+}

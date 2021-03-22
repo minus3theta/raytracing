@@ -1,4 +1,7 @@
-use crate::{emittable::EmittableEnum, Emittable, MaterialPtr, Point3, Random, Ray, Vec3};
+use crate::{
+    emittable::EmittableEnum, Emittable, EmittablePtr, HittablePtr, MaterialPtr, Point3, Random,
+    Ray, Vec3,
+};
 
 use super::{Aabb, HitRecord, Hittable, HittableEnum};
 
@@ -146,9 +149,21 @@ impl Into<HittableEnum> for XZRect {
     }
 }
 
+impl Into<HittablePtr> for XZRect {
+    fn into(self) -> HittablePtr {
+        Into::<HittableEnum>::into(self).into()
+    }
+}
+
 impl Into<EmittableEnum> for XZRect {
     fn into(self) -> EmittableEnum {
         EmittableEnum::XZRect(self)
+    }
+}
+
+impl Into<EmittablePtr> for XZRect {
+    fn into(self) -> EmittablePtr {
+        Into::<EmittableEnum>::into(self).into()
     }
 }
 

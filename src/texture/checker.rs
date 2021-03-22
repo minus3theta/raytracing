@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use crate::{Color, Point3};
 
-use super::{SolidColor, Texture, TexturePtr};
+use super::{Texture, TextureEnum, TexturePtr};
 
 #[derive(Clone)]
 pub struct Checker {
@@ -11,14 +9,23 @@ pub struct Checker {
 }
 
 impl Checker {
-    pub fn new(even: TexturePtr, odd: TexturePtr) -> Self {
-        Self { even, odd }
+    pub fn new(even: impl Into<TexturePtr>, odd: impl Into<TexturePtr>) -> Self {
+        Self {
+            even: even.into(),
+            odd: odd.into(),
+        }
     }
-    pub fn with_color(even: Color, odd: Color) -> Self {
-        Self::new(
-            Arc::new(SolidColor::new(even)),
-            Arc::new(SolidColor::new(odd)),
-        )
+}
+
+impl Into<TextureEnum> for Checker {
+    fn into(self) -> TextureEnum {
+        TextureEnum::Checker(self)
+    }
+}
+
+impl Into<TexturePtr> for Checker {
+    fn into(self) -> TexturePtr {
+        Into::<TextureEnum>::into(self).into()
     }
 }
 

@@ -10,7 +10,7 @@ pub mod triangle;
 
 use std::sync::Arc;
 
-use crate::Random;
+use crate::{Random, TexturePtr};
 
 use super::{MaterialPtr, Point3, Ray, Vec3};
 
@@ -82,6 +82,7 @@ pub enum HittableEnum {
     Translate(Translate),
     HittableList(HittableList),
     BvhNode(BvhNode),
+    ConstantMedium(ConstantMedium),
 }
 
 impl Hittable for HittableEnum {
@@ -99,6 +100,7 @@ impl Hittable for HittableEnum {
             HittableEnum::Translate(o) => o.hit(r, t_min, t_max, rng),
             HittableEnum::HittableList(o) => o.hit(r, t_min, t_max, rng),
             HittableEnum::BvhNode(o) => o.hit(r, t_min, t_max, rng),
+            HittableEnum::ConstantMedium(o) => o.hit(r, t_min, t_max, rng),
         }
     }
 
@@ -116,6 +118,7 @@ impl Hittable for HittableEnum {
             HittableEnum::Translate(o) => o.bounding_box(time0, time1),
             HittableEnum::HittableList(o) => o.bounding_box(time0, time1),
             HittableEnum::BvhNode(o) => o.bounding_box(time0, time1),
+            HittableEnum::ConstantMedium(o) => o.bounding_box(time0, time1),
         }
     }
 }
@@ -190,8 +193,24 @@ impl HittableEnum {
     pub fn hittable_list(o: HittableList) -> HittablePtr {
         Arc::new(HittableEnum::HittableList(o))
     }
-    pub fn bvh_node(o: BvhNode) -> HittablePtr {
-        Arc::new(HittableEnum::BvhNode(o))
+    pub fn bvh_node(
+        objects: &mut [HittablePtr],
+        time0: f64,
+        time1: f64,
+        rng: &mut Random,
+    ) -> Option<HittablePtr> {
+        Some(Arc::new(HittableEnum::BvhNode(BvhNode::new(
+            objects, time0, time1, rng,
+        )?)))
+    }
+    pub fn constant_medium(
+        boundary: HittablePtr,
+        density: f64,
+        texture: impl Into<TexturePtr>,
+    ) -> HittablePtr {
+        Arc::new(HittableEnum::ConstantMedium(ConstantMedium::new(
+            boundary, density, texture,
+        )))
     }
 }
 

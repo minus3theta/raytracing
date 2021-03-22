@@ -4,8 +4,8 @@ use anyhow::Context;
 use image::io::Reader as ImageReader;
 use image::{DynamicImage, Rgb, RgbImage};
 
-use super::Texture;
-use crate::{Color, Point3};
+use super::{Texture, TextureEnum};
+use crate::{Color, Point3, TexturePtr};
 
 #[derive(Debug, Clone)]
 pub struct ImageTexture {
@@ -38,6 +38,18 @@ impl Texture for ImageTexture {
             g as f64 * color_scale,
             b as f64 * color_scale,
         )
+    }
+}
+
+impl Into<TextureEnum> for ImageTexture {
+    fn into(self) -> TextureEnum {
+        TextureEnum::Image(self)
+    }
+}
+
+impl Into<TexturePtr> for ImageTexture {
+    fn into(self) -> TexturePtr {
+        Into::<TextureEnum>::into(self).into()
     }
 }
 

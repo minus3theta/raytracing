@@ -3,7 +3,7 @@ use std::{f64::consts::PI, sync::Arc};
 use crate::{
     pdf::PdfEnum,
     pdf::{CosinePdf, UniformSpherePdf},
-    Color, HitRecord, Random, Ray, TexturePtr, Vec3,
+    Color, HitRecord, Random, Ray, Texture, TexturePtr, Vec3,
 };
 
 #[derive(Clone)]
