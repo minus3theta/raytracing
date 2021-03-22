@@ -111,8 +111,12 @@ where
     U: Pdf,
 {
     fn value(&self, direction: &Vec3, rng: &mut Random) -> f64 {
-        self.ratio * self.p0.value(direction, rng)
-            + (1.0 - self.ratio) * self.p1.value(direction, rng)
+        if self.ratio > 0.0 {
+            self.ratio * self.p0.value(direction, rng)
+                + (1.0 - self.ratio) * self.p1.value(direction, rng)
+        } else {
+            self.p1.value(direction, rng)
+        }
     }
 
     fn generate(&self, rng: &mut Random) -> Vec3 {
